@@ -1,0 +1,1569 @@
+openapi: 3.0.3
+info:
+  title: Smart Bracelet Newborn Monitoring API
+  version: 1.0.0
+  description: 'REST API for the newborn vitals monitoring ecosystem. IMPORTANT: this
+    system flags abnormal readings for caregiver or medical follow-up. It does NOT
+    provide medical diagnoses.'
+paths:
+  /api/v1/alerts/:
+    get:
+      operationId: v1_alerts_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAlertList'
+          description: ''
+  /api/v1/alerts/{id}/:
+    get:
+      operationId: v1_alerts_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Alert'
+          description: ''
+  /api/v1/alerts/{id}/acknowledge/:
+    post:
+      operationId: v1_alerts_acknowledge_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/alerts/report-ble-lost/:
+    post:
+      operationId: v1_alerts_report_ble_lost_create
+      description: |-
+        The mobile app observes BLE link loss and reports it here (the backend
+        itself cannot see the BLE link).
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/auth/login:
+    post:
+      operationId: v1_auth_login_create
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/auth/logout:
+    post:
+      operationId: v1_auth_logout_create
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/auth/refresh:
+    post:
+      operationId: v1_auth_refresh_create
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/auth/register:
+    post:
+      operationId: v1_auth_register_create
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/babies/:
+    get:
+      operationId: v1_babies_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBabyList'
+          description: ''
+    post:
+      operationId: v1_babies_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Baby'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Baby'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Baby'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Baby'
+          description: ''
+  /api/v1/babies/{baby_id}/medical-history/:
+    get:
+      operationId: v1_babies_medical_history_list
+      description: Append-only medical history. Doctors (assigned) and admins can
+        append.
+      parameters:
+      - in: path
+        name: baby_id
+        schema:
+          type: integer
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMedicalHistoryEntryList'
+          description: ''
+    post:
+      operationId: v1_babies_medical_history_create
+      description: Append-only medical history. Doctors (assigned) and admins can
+        append.
+      parameters:
+      - in: path
+        name: baby_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MedicalHistoryEntry'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MedicalHistoryEntry'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MedicalHistoryEntry'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicalHistoryEntry'
+          description: ''
+  /api/v1/babies/{id}/:
+    get:
+      operationId: v1_babies_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Baby'
+          description: ''
+    put:
+      operationId: v1_babies_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Baby'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Baby'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Baby'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Baby'
+          description: ''
+    patch:
+      operationId: v1_babies_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBaby'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBaby'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBaby'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Baby'
+          description: ''
+    delete:
+      operationId: v1_babies_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/bracelets/:
+    get:
+      operationId: v1_bracelets_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBraceletList'
+          description: ''
+    post:
+      operationId: v1_bracelets_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Bracelet'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Bracelet'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Bracelet'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bracelet'
+          description: ''
+  /api/v1/bracelets/{id}/:
+    get:
+      operationId: v1_bracelets_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bracelet'
+          description: ''
+    put:
+      operationId: v1_bracelets_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Bracelet'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Bracelet'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Bracelet'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bracelet'
+          description: ''
+    patch:
+      operationId: v1_bracelets_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBracelet'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBracelet'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBracelet'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bracelet'
+          description: ''
+    delete:
+      operationId: v1_bracelets_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/bracelets/{id}/pair/:
+    post:
+      operationId: v1_bracelets_pair_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/bracelets/{id}/pairings/:
+    get:
+      operationId: v1_bracelets_pairings_list
+      description: Doctor/admin view of a bracelet's full pairing history.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPairingList'
+          description: ''
+  /api/v1/bracelets/{id}/unpair/:
+    post:
+      operationId: v1_bracelets_unpair_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/doctors/:
+    get:
+      operationId: v1_doctors_list
+      description: Used by admin (dashboard user management) and to assign doctors.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDoctorList'
+          description: ''
+  /api/v1/doctors/{id}/:
+    get:
+      operationId: v1_doctors_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Doctor'
+          description: ''
+    put:
+      operationId: v1_doctors_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Doctor'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Doctor'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Doctor'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Doctor'
+          description: ''
+    patch:
+      operationId: v1_doctors_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDoctor'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDoctor'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDoctor'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Doctor'
+          description: ''
+  /api/v1/me/:
+    get:
+      operationId: v1_me_retrieve
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSummary'
+          description: ''
+  /api/v1/measurements/:
+    get:
+      operationId: v1_measurements_retrieve
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: v1_measurements_create
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/notifications/:
+    get:
+      operationId: v1_notifications_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedNotificationList'
+          description: ''
+  /api/v1/notifications/{id}/read/:
+    post:
+      operationId: v1_notifications_read_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/notifications/device-tokens/:
+    post:
+      operationId: v1_notifications_device_tokens_create
+      description: Mobile app registers its FCM token after login; idempotent upsert.
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: v1_notifications_device_tokens_destroy
+      description: Mobile app registers its FCM token after login; idempotent upsert.
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/parents/{id}/:
+    get:
+      operationId: v1_parents_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parent'
+          description: ''
+    put:
+      operationId: v1_parents_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Parent'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Parent'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Parent'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parent'
+          description: ''
+    patch:
+      operationId: v1_parents_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedParent'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedParent'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedParent'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parent'
+          description: ''
+  /api/v1/users/:
+    get:
+      operationId: v1_users_list
+      description: 'Admin-only: full user list for the dashboard Users page.'
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUserSummaryList'
+          description: ''
+components:
+  schemas:
+    Alert:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        baby:
+          type: integer
+          readOnly: true
+        baby_name:
+          type: string
+          readOnly: true
+        bracelet:
+          type: integer
+          readOnly: true
+          nullable: true
+        type:
+          allOf:
+          - $ref: '#/components/schemas/TypeEnum'
+          readOnly: true
+        severity:
+          allOf:
+          - $ref: '#/components/schemas/SeverityEnum'
+          readOnly: true
+        message:
+          type: string
+          readOnly: true
+        value:
+          type: number
+          format: double
+          readOnly: true
+          nullable: true
+        triggered_at:
+          type: string
+          format: date-time
+          readOnly: true
+        resolved_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        acknowledged_by:
+          type: integer
+          readOnly: true
+          nullable: true
+        acknowledged_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        disclaimer:
+          type: string
+          readOnly: true
+      required:
+      - acknowledged_at
+      - acknowledged_by
+      - baby
+      - baby_name
+      - bracelet
+      - disclaimer
+      - id
+      - message
+      - resolved_at
+      - severity
+      - triggered_at
+      - type
+      - value
+    Baby:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        birth_date:
+          type: string
+          format: date
+        weight_grams:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Birth/current weight in grams
+        gender:
+          $ref: '#/components/schemas/GenderEnum'
+        parent:
+          type: integer
+          readOnly: true
+        parent_name:
+          type: string
+          readOnly: true
+          default: ''
+        assigned_doctor:
+          type: integer
+          nullable: true
+        medical_history:
+          type: array
+          items:
+            $ref: '#/components/schemas/MedicalHistoryEntry'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - birth_date
+      - created_at
+      - id
+      - medical_history
+      - name
+      - parent
+      - parent_name
+      - weight_grams
+    Bracelet:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        serial_number:
+          type: string
+          maxLength: 64
+        firmware_version:
+          type: string
+          maxLength: 32
+        baby:
+          type: integer
+          readOnly: true
+          nullable: true
+        baby_name:
+          type: string
+          readOnly: true
+        battery_level:
+          type: number
+          format: double
+          nullable: true
+        last_seen_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        status:
+          $ref: '#/components/schemas/BraceletStatusEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - baby
+      - baby_name
+      - created_at
+      - id
+      - last_seen_at
+      - serial_number
+    BraceletStatusEnum:
+      enum:
+      - active
+      - inactive
+      - maintenance
+      type: string
+      description: |-
+        * `active` - Active
+        * `inactive` - Inactive
+        * `maintenance` - Maintenance
+    ChannelEnum:
+      enum:
+      - push
+      - sms
+      - email
+      type: string
+      description: |-
+        * `push` - Push
+        * `sms` - Sms
+        * `email` - Email
+    Doctor:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          $ref: '#/components/schemas/UserSummary'
+        license_number:
+          type: string
+          maxLength: 64
+        specialty:
+          type: string
+          maxLength: 128
+      required:
+      - id
+      - license_number
+      - user
+    GenderEnum:
+      enum:
+      - male
+      - female
+      - unspecified
+      type: string
+      description: |-
+        * `male` - Male
+        * `female` - Female
+        * `unspecified` - Unspecified
+    MedicalHistoryEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        details:
+          type: string
+        recorded_by:
+          type: integer
+          readOnly: true
+          nullable: true
+        supersedes:
+          type: integer
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - recorded_by
+      - title
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        alert:
+          type: integer
+          readOnly: true
+          nullable: true
+        channel:
+          allOf:
+          - $ref: '#/components/schemas/ChannelEnum'
+          readOnly: true
+        title:
+          type: string
+          readOnly: true
+        body:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/NotificationStatusEnum'
+          readOnly: true
+        sent_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        read_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - alert
+      - body
+      - channel
+      - created_at
+      - id
+      - read_at
+      - sent_at
+      - status
+      - title
+    NotificationStatusEnum:
+      enum:
+      - pending
+      - sent
+      - failed
+      - read
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `sent` - Sent
+        * `failed` - Failed
+        * `read` - Read
+    PaginatedAlertList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Alert'
+    PaginatedBabyList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Baby'
+    PaginatedBraceletList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Bracelet'
+    PaginatedDoctorList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Doctor'
+    PaginatedMedicalHistoryEntryList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MedicalHistoryEntry'
+    PaginatedNotificationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+    PaginatedPairingList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Pairing'
+    PaginatedUserSummaryList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserSummary'
+    Pairing:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        bracelet:
+          type: integer
+        baby:
+          type: integer
+        paired_at:
+          type: string
+          format: date-time
+          readOnly: true
+        unpaired_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - baby
+      - bracelet
+      - id
+      - paired_at
+    Parent:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          $ref: '#/components/schemas/UserSummary'
+        address:
+          type: string
+          maxLength: 255
+        emergency_contact:
+          type: string
+          maxLength: 64
+      required:
+      - id
+      - user
+    PatchedBaby:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        birth_date:
+          type: string
+          format: date
+        weight_grams:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Birth/current weight in grams
+        gender:
+          $ref: '#/components/schemas/GenderEnum'
+        parent:
+          type: integer
+          readOnly: true
+        parent_name:
+          type: string
+          readOnly: true
+          default: ''
+        assigned_doctor:
+          type: integer
+          nullable: true
+        medical_history:
+          type: array
+          items:
+            $ref: '#/components/schemas/MedicalHistoryEntry'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedBracelet:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        serial_number:
+          type: string
+          maxLength: 64
+        firmware_version:
+          type: string
+          maxLength: 32
+        baby:
+          type: integer
+          readOnly: true
+          nullable: true
+        baby_name:
+          type: string
+          readOnly: true
+        battery_level:
+          type: number
+          format: double
+          nullable: true
+        last_seen_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        status:
+          $ref: '#/components/schemas/BraceletStatusEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedDoctor:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          $ref: '#/components/schemas/UserSummary'
+        license_number:
+          type: string
+          maxLength: 64
+        specialty:
+          type: string
+          maxLength: 128
+    PatchedParent:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          $ref: '#/components/schemas/UserSummary'
+        address:
+          type: string
+          maxLength: 255
+        emergency_contact:
+          type: string
+          maxLength: 64
+    RoleEnum:
+      enum:
+      - parent
+      - doctor
+      - admin
+      type: string
+      description: |-
+        * `parent` - Parent
+        * `doctor` - Doctor
+        * `admin` - Admin
+    SeverityEnum:
+      enum:
+      - info
+      - warning
+      - critical
+      type: string
+      description: |-
+        * `info` - Info
+        * `warning` - Warning
+        * `critical` - Critical
+    TypeEnum:
+      enum:
+      - high_temp
+      - low_temp
+      - low_oxygen
+      - high_hr
+      - low_hr
+      - no_movement
+      - bracelet_removed
+      - battery_low
+      - ble_lost
+      - no_data
+      type: string
+      description: |-
+        * `high_temp` - High Temp
+        * `low_temp` - Low Temp
+        * `low_oxygen` - Low Oxygen
+        * `high_hr` - High Hr
+        * `low_hr` - Low Hr
+        * `no_movement` - No Movement
+        * `bracelet_removed` - Bracelet Removed
+        * `battery_low` - Battery Low
+        * `ble_lost` - Ble Lost
+        * `no_data` - No Data
+    UserSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+        first_name:
+          type: string
+          maxLength: 100
+        last_name:
+          type: string
+          maxLength: 100
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          readOnly: true
+        phone:
+          type: string
+          maxLength: 32
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - email
+      - id
+      - role
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
