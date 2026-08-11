@@ -39,6 +39,12 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     objects = UserManager()
 
+    def get_full_name(self) -> str:
+        return f"{self.first_name} {self.last_name}".strip() or self.email
+
+    def get_short_name(self) -> str:
+        return self.first_name or self.email
+
     def __str__(self) -> str:  # pragma: no cover
         return f"{self.email} ({self.role})"
 

@@ -122,6 +122,24 @@ export async function login(email: string, password: string): Promise<TokenPair>
   return pair;
 }
 
+// ---------------------------------------------------------------- pagination
+
+/** Walks every page of a DRF paginated endpoint and returns the flattened list.
+ * Shared by every list page (users, doctors, parents, bracelets, babies…) so
+ * pagination-walking logic lives in exactly one place. */
+export async function fetchAllPages<T>(basePath: string, maxPages = 100): Promise<T[]> {
+  const out: T[] = [];
+  let page = 1;
+  for (;;) {
+    const sep = basePath.includes('?') ? '&' : '?';
+    const res = await apiFetch<{ results: T[]; next: string | null }>(`${basePath}${sep}page=${page}`);
+    out.push(...res.results);
+    if (!res.next || page >= maxPages) break;
+    page += 1;
+  }
+  return out;
+}
+
 export async function logout(): Promise<void> {
   const refresh = localStorage.getItem(REFRESH_KEY);
   try {

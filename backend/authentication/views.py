@@ -19,6 +19,9 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import Session
 from .serializers import LoginSerializer, LogoutSerializer, RefreshSerializer, RegisterSerializer
+from notifications.models import Notification
+from notifications.utils import notify
+from users.serializers import UserSummarySerializer
 
 
 class AuthThrottle(AnonRateThrottle):
@@ -38,13 +41,7 @@ def _issue_tokens(user, request) -> dict:
     return {
         "access": str(refresh.access_token),
         "refresh": str(refresh),
-        "user": {
-            "id": user.id,
-            "email": user.email,
-            "first_name": user.first_name,
-            "last_name": user.last_name,
-            "role": user.role,
-        },
+        "user": UserSummarySerializer(user).data,
     }
 
 
@@ -56,6 +53,16 @@ class RegisterView(APIView):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
+        role_tip = {
+            "parent": "Add your baby and pair a bracelet to get started.",
+            "doctor": "Patients will appear once a parent requests you or an admin assigns you.",
+        }.get(user.role, "Welcome aboard.")
+        notify(
+            user,
+            "Welcome to Smart Bracelet Monitor",
+            role_tip,
+            category=Notification.Category.SYSTEM,
+        )
         return Response(_issue_tokens(user, request), status=status.HTTP_201_CREATED)
 
 

@@ -1,6 +1,12 @@
 /// Offline-first SQLite store: every BLE measurement is written here FIRST,
 /// then the SyncService pushes unsynced rows to the backend in batches and
 /// marks them synced. The app stays fully usable with no network.
+///
+/// A row that keeps failing to upload (network error, server rejecting the
+/// batch, etc.) is NOT retried forever silently — after
+/// [SyncService.failThreshold] attempts it's classified "failed" rather than
+/// "pending", so the Settings screen can show it separately and offer a
+/// manual retry instead of it just quietly never syncing.
 import 'dart:convert';
 
 import 'package:path/path.dart' as p;
@@ -10,6 +16,7 @@ import '../models/models.dart';
 
 class LocalDb {
   static const _dbName = 'bracelet_monitor.db';
+  static const failThreshold = 5;
   Database? _db;
 
   Future<Database> get db async {
@@ -17,7 +24,7 @@ class LocalDb {
     final path = p.join(await getDatabasesPath(), _dbName);
     _db = await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: (db, _) async {
         await db.execute('''
           CREATE TABLE measurements (
@@ -27,11 +34,23 @@ class LocalDb {
             movement_json TEXT, battery REAL,
             skin_contact INTEGER NOT NULL DEFAULT 1,
             recorded_at TEXT NOT NULL,
-            synced INTEGER NOT NULL DEFAULT 0
+            synced INTEGER NOT NULL DEFAULT 0,
+            retry_count INTEGER NOT NULL DEFAULT 0,
+            last_error TEXT,
+            last_attempt_at TEXT
           )
         ''');
         await db.execute(
             'CREATE INDEX idx_meas_synced ON measurements(synced, recorded_at)');
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute(
+              'ALTER TABLE measurements ADD COLUMN retry_count INTEGER NOT NULL DEFAULT 0');
+          await db.execute('ALTER TABLE measurements ADD COLUMN last_error TEXT');
+          await db
+              .execute('ALTER TABLE measurements ADD COLUMN last_attempt_at TEXT');
+        }
       },
     );
     return _db!;
@@ -52,11 +71,16 @@ class LocalDb {
     });
   }
 
-  /// Oldest-first unsynced batch (bounded — the backend caps bulk at 500).
+  /// Oldest-first batch that's still worth retrying automatically (excludes
+  /// rows that have already crossed [failThreshold] — those wait for a
+  /// manual retry so a permanently-broken row doesn't hog every sync tick).
   Future<List<Map<String, dynamic>>> unsyncedBatch({int limit = 200}) async {
     final database = await db;
     return database.query('measurements',
-        where: 'synced = 0', orderBy: 'recorded_at ASC', limit: limit);
+        where: 'synced = 0 AND retry_count < ?',
+        whereArgs: [failThreshold],
+        orderBy: 'recorded_at ASC',
+        limit: limit);
   }
 
   Future<void> markSynced(List<int> localIds) async {
@@ -67,6 +91,26 @@ class LocalDb {
         whereArgs: localIds);
   }
 
+  /// Bump retry_count/last_error for a batch that failed to upload.
+  Future<void> markFailed(List<int> localIds, String error) async {
+    if (localIds.isEmpty) return;
+    final database = await db;
+    final now = DateTime.now().toUtc().toIso8601String();
+    await database.rawUpdate(
+      'UPDATE measurements SET retry_count = retry_count + 1, '
+      'last_error = ?, last_attempt_at = ? '
+      'WHERE local_id IN (${List.filled(localIds.length, '?').join(',')})',
+      [error, now, ...localIds],
+    );
+  }
+
+  /// Give up-and-tried-again rows another chance (Settings "Retry failed").
+  Future<void> resetFailed() async {
+    final database = await db;
+    await database.update('measurements', {'retry_count': 0},
+        where: 'synced = 0 AND retry_count >= ?', whereArgs: [failThreshold]);
+  }
+
   /// Recent local history for offline viewing (bounded window).
   Future<List<Map<String, dynamic>>> recentMeasurements({int limit = 500}) async {
     final database = await db;
@@ -74,10 +118,19 @@ class LocalDb {
         orderBy: 'recorded_at DESC', limit: limit);
   }
 
-  Future<int> unsyncedCount() async {
+  Future<int> pendingCount() async {
     final database = await db;
-    final rows = await database
-        .rawQuery('SELECT COUNT(*) AS c FROM measurements WHERE synced = 0');
+    final rows = await database.rawQuery(
+        'SELECT COUNT(*) AS c FROM measurements WHERE synced = 0 AND retry_count < ?',
+        [failThreshold]);
+    return rows.first['c'] as int;
+  }
+
+  Future<int> failedCount() async {
+    final database = await db;
+    final rows = await database.rawQuery(
+        'SELECT COUNT(*) AS c FROM measurements WHERE synced = 0 AND retry_count >= ?',
+        [failThreshold]);
     return rows.first['c'] as int;
   }
 

@@ -2,7 +2,7 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from users.models import Doctor
-from .models import Baby, MedicalHistoryEntry
+from .models import Baby, DoctorAssignmentRequest, MedicalHistoryEntry
 
 
 class MedicalHistoryEntrySerializer(serializers.ModelSerializer):
@@ -37,3 +37,20 @@ class BabySerializer(serializers.ModelSerializer):
         if not (300 <= value <= 8000):
             raise serializers.ValidationError("Weight must be between 300g and 8000g.")
         return value
+
+
+class DoctorAssignmentRequestSerializer(serializers.ModelSerializer):
+    baby_name = serializers.CharField(source="baby.name", read_only=True)
+    doctor_name = serializers.CharField(source="doctor.user.get_full_name", read_only=True)
+    doctor_specialty = serializers.CharField(source="doctor.specialty", read_only=True)
+
+    class Meta:
+        model = DoctorAssignmentRequest
+        fields = [
+            "id", "baby", "baby_name", "doctor", "doctor_name", "doctor_specialty",
+            "requested_by", "status", "note", "created_at", "responded_at",
+        ]
+        read_only_fields = [
+            "id", "baby_name", "doctor_name", "doctor_specialty",
+            "baby", "requested_by", "status", "created_at", "responded_at",
+        ]

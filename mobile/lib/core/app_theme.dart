@@ -10,6 +10,14 @@ class AppColors {
   static const critical = Color(0xFFD64545);
   static const warning = Color(0xFFE8A33D);
   static const info = Color(0xFF4A90D9);
+
+  // Role accents for the bottom-nav shell (Section 1/13): a persistent,
+  // always-visible cue for which of the three roles you're in. Layered only
+  // on the shell's own nav indicator + Theme.primary — alert severities,
+  // status colors, etc. above stay global and never change meaning by role.
+  static const parentAccent = accent;              // soft green — warm, reassuring
+  static const doctorAccent = primary;             // medical blue — clinical default
+  static const adminAccent = Color(0xFF6B5B95);    // graphite indigo — systems/ops
 }
 
 class AppTheme {

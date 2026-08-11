@@ -62,6 +62,8 @@ class MeasurementBucketSerializer(serializers.Serializer):
     heart_rate_avg = serializers.FloatField(allow_null=True)
     temperature_avg = serializers.FloatField(allow_null=True)
     spo2_avg = serializers.FloatField(allow_null=True)
+    battery_avg = serializers.FloatField(allow_null=True)
+    movement_magnitude_avg = serializers.FloatField(allow_null=True)
     heart_rate_min = serializers.FloatField(allow_null=True)
     heart_rate_max = serializers.FloatField(allow_null=True)
     count = serializers.IntegerField()

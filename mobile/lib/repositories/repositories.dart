@@ -4,13 +4,13 @@
 import '../core/api_client.dart';
 import '../core/secure_store.dart';
 import '../models/models.dart';
-import '../services/ble_service.dart';
 import '../services/local_db.dart';
+import '../services/vitals_source.dart';
 
 class AuthRepository {
   final ApiClient _api;
   final SecureStore _store;
-  final BleService _ble;
+  final VitalsSource _ble;
 
   AuthRepository(this._api, this._store, this._ble);
 
@@ -47,6 +47,17 @@ class AuthRepository {
     final json = await _store.readUser();
     return json == null ? null : User.fromJson(json);
   }
+
+  /// Re-fetches the current user from the server (GET /me/) and updates the
+  /// cached copy — used after a profile edit so every screen that reads
+  /// `authProvider.user` (name, phone, doctor_profile_id, …) sees fresh data
+  /// without requiring a full re-login.
+  Future<User> refreshMe() async {
+    final data = await _api.get('/me/');
+    final user = User.fromJson(data as Map<String, dynamic>);
+    await _store.saveUser(data);
+    return user;
+  }
 }
 
 class BabyRepository {
@@ -63,6 +74,100 @@ class BabyRepository {
   Future<Baby> create(Map<String, dynamic> payload) async {
     final data = await _api.post('/babies/', body: payload);
     return Baby.fromJson(data as Map<String, dynamic>);
+  }
+
+  /// Parent/admin only — the backend rejects a doctor editing these fields
+  /// (doctors record clinical notes via medical history, not registration edits).
+  Future<Baby> update(int id, Map<String, dynamic> payload) async {
+    final data = await _api.patch('/babies/$id/', body: payload);
+    return Baby.fromJson(data as Map<String, dynamic>);
+  }
+
+  /// Parent/admin only — the backend rejects a doctor deleting a patient record.
+  Future<void> delete(int id) => _api.delete('/babies/$id/');
+
+  /// Append-only medical history (Section 4): doctors/admins append entries,
+  /// parents/doctors only ever read them. The backend enforces who may POST.
+  Future<List<MedicalHistoryEntry>> medicalHistory(int babyId) async {
+    final data = await _api.get('/babies/$babyId/medical-history/');
+    return (data['results'] as List)
+        .map((e) => MedicalHistoryEntry.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<MedicalHistoryEntry> addMedicalHistoryEntry(
+    int babyId, {
+    required String title,
+    required String details,
+    int? supersedes,
+  }) async {
+    final data = await _api.post('/babies/$babyId/medical-history/', body: {
+      'title': title,
+      'details': details,
+      if (supersedes != null) 'supersedes': supersedes,
+    });
+    return MedicalHistoryEntry.fromJson(data as Map<String, dynamic>);
+  }
+
+  /// Admin: direct-assign or clear a baby's doctor. Doctor: may only clear
+  /// their own assignment (self-removal). The backend enforces both rules;
+  /// this is a thin wrapper, not the source of truth.
+  Future<Baby> setAssignedDoctor(int babyId, int? doctorId) async {
+    final data =
+        await _api.patch('/babies/$babyId/', body: {'assigned_doctor': doctorId});
+    return Baby.fromJson(data as Map<String, dynamic>);
+  }
+}
+
+/// Section 3 workflow: parent requests a doctor, the doctor accepts/declines.
+class DoctorAssignmentRepository {
+  final ApiClient _api;
+  DoctorAssignmentRepository(this._api);
+
+  /// Parent: request a doctor for one of their babies.
+  Future<DoctorAssignmentRequest> create(
+    int babyId,
+    int doctorId, {
+    String note = '',
+  }) async {
+    final data = await _api.post('/babies/$babyId/doctor-requests/', body: {
+      'doctor': doctorId,
+      if (note.isNotEmpty) 'note': note,
+    });
+    return DoctorAssignmentRequest.fromJson(data as Map<String, dynamic>);
+  }
+
+  /// History of requests for one baby (parent/admin/assigned doctor).
+  Future<List<DoctorAssignmentRequest>> forBaby(int babyId) async {
+    final data = await _api.get('/babies/$babyId/doctor-requests/');
+    return (data['results'] as List)
+        .map((e) => DoctorAssignmentRequest.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// Top-level inbox: doctor sees requests addressed to them, parent sees
+  /// requests for their babies, admin sees everything.
+  Future<List<DoctorAssignmentRequest>> inbox({String? status}) async {
+    final data = await _api.get('/babies/doctor-requests/',
+        query: status != null ? {'status': status} : null);
+    return (data['results'] as List)
+        .map((e) => DoctorAssignmentRequest.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<DoctorAssignmentRequest> accept(int requestId) async {
+    final data = await _api.post('/babies/doctor-requests/$requestId/accept/');
+    return DoctorAssignmentRequest.fromJson(data as Map<String, dynamic>);
+  }
+
+  Future<DoctorAssignmentRequest> decline(int requestId) async {
+    final data = await _api.post('/babies/doctor-requests/$requestId/decline/');
+    return DoctorAssignmentRequest.fromJson(data as Map<String, dynamic>);
+  }
+
+  Future<DoctorAssignmentRequest> cancel(int requestId) async {
+    final data = await _api.post('/babies/doctor-requests/$requestId/cancel/');
+    return DoctorAssignmentRequest.fromJson(data as Map<String, dynamic>);
   }
 }
 
@@ -90,6 +195,21 @@ class BraceletRepository {
 
   Future<void> unpair(int braceletId) =>
       _api.post('/bracelets/$braceletId/unpair/');
+
+  /// Persisted app-level rename (works regardless of BLE connection state —
+  /// unlike the BLE "rename" command in bracelet_info_screen, which writes
+  /// the name to the physical device itself and needs an active connection).
+  Future<Bracelet> rename(int braceletId, String nickname) async {
+    final data = await _api.patch('/bracelets/$braceletId/', body: {'nickname': nickname});
+    return Bracelet.fromJson(data as Map<String, dynamic>);
+  }
+
+  Future<List<Pairing>> pairingHistory(int braceletId) async {
+    final data = await _api.get('/bracelets/$braceletId/pairings/');
+    return (data['results'] as List)
+        .map((e) => Pairing.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
 }
 
 class MeasurementRepository {
@@ -135,10 +255,19 @@ class AlertRepository {
   final ApiClient _api;
   AlertRepository(this._api);
 
-  Future<List<Alert>> list({int? babyId, String? status}) async {
+  Future<List<Alert>> list({
+    int? babyId,
+    String? status,
+    String? severity,
+    DateTime? from,
+    DateTime? to,
+  }) async {
     final data = await _api.get('/alerts/', query: {
       if (babyId != null) 'baby_id': '$babyId',
       if (status != null) 'status': status,
+      if (severity != null) 'severity': severity,
+      if (from != null) 'from': from.toUtc().toIso8601String(),
+      if (to != null) 'to': to.toUtc().toIso8601String(),
     });
     return (data['results'] as List)
         .map((e) => Alert.fromJson(e as Map<String, dynamic>))
@@ -154,19 +283,144 @@ class AlertRepository {
     final data = await _api.post('/alerts/$id/acknowledge/');
     return Alert.fromJson(data as Map<String, dynamic>);
   }
+
+  /// Doctor/admin only — the backend rejects a parent resolving a
+  /// vitals-based alert (acknowledging is as far as a parent's action goes).
+  Future<Alert> resolve(int id) async {
+    final data = await _api.post('/alerts/$id/resolve/');
+    return Alert.fromJson(data as Map<String, dynamic>);
+  }
 }
 
 class NotificationRepository {
   final ApiClient _api;
   NotificationRepository(this._api);
 
-  Future<List<AppNotification>> list({bool unreadOnly = false}) async {
-    final data = await _api.get('/notifications/',
-        query: unreadOnly ? {'unread': 'true'} : null);
+  Future<List<AppNotification>> list({bool unreadOnly = false, String? category}) async {
+    final data = await _api.get('/notifications/', query: {
+      if (unreadOnly) 'unread': 'true',
+      if (category != null) 'category': category,
+    });
     return (data['results'] as List)
         .map((e) => AppNotification.fromJson(e as Map<String, dynamic>))
         .toList();
   }
 
   Future<void> markRead(int id) => _api.post('/notifications/$id/read/');
+
+  Future<int> markAllRead() async {
+    final data = await _api.post('/notifications/read-all/');
+    return (data['marked_read'] as int?) ?? 0;
+  }
+
+  Future<void> delete(int id) => _api.delete('/notifications/$id/');
+
+  /// Section 11: per-category mute (alert is never included — always on).
+  Future<Map<String, bool>> getPreferences() async {
+    final data = await _api.get('/notifications/preferences/');
+    return (data as Map<String, dynamic>).map((k, v) => MapEntry(k, v as bool));
+  }
+
+  Future<Map<String, bool>> updatePreference(String category, bool enabled) async {
+    final data = await _api
+        .patch('/notifications/preferences/', body: {category: enabled});
+    return (data as Map<String, dynamic>).map((k, v) => MapEntry(k, v as bool));
+  }
+}
+
+/// Account directory + profile editing. The admin-only list endpoints
+/// (`/users/`, `/parents/`) 403 for non-admins; the doctor directory
+/// (`/doctors/`) is readable by any authenticated user (needed for doctor
+/// assignment pickers and for a doctor to find their own Doctor.id).
+class UserRepository {
+  final ApiClient _api;
+  UserRepository(this._api);
+
+  /// Walks every page of a DRF-paginated list endpoint.
+  Future<List<T>> _paged<T>(
+    String path,
+    T Function(Map<String, dynamic>) fromJson,
+  ) async {
+    final all = <T>[];
+    var page = 1;
+    while (true) {
+      final data = await _api.get(path, query: {'page': '$page'});
+      all.addAll(
+          (data['results'] as List).map((e) => fromJson(e as Map<String, dynamic>)));
+      if (data['next'] == null || page > 100) break;
+      page += 1;
+    }
+    return all;
+  }
+
+  /// Admin-only: every account on the platform.
+  Future<List<User>> listUsers() => _paged('/users/', User.fromJson);
+
+  /// Readable by any authenticated user (doctor assignment pickers, and so a
+  /// doctor can find their own Doctor.id for self-editing).
+  Future<List<DoctorProfile>> listDoctors() =>
+      _paged('/doctors/', DoctorProfile.fromJson);
+
+  /// Admin-only: every parent account with contact details.
+  Future<List<ParentProfile>> listParents() =>
+      _paged('/parents/', ParentProfile.fromJson);
+
+  /// Edit the current user's own basic info (any role).
+  Future<User> updateMe({String? firstName, String? lastName, String? phone}) async {
+    final data = await _api.patch('/me/', body: {
+      if (firstName != null) 'first_name': firstName,
+      if (lastName != null) 'last_name': lastName,
+      if (phone != null) 'phone': phone,
+    });
+    return User.fromJson(data as Map<String, dynamic>);
+  }
+
+  /// Doctor self-edit (or admin editing a doctor): specialty + basic user fields.
+  Future<DoctorProfile> updateDoctor(
+    int doctorId, {
+    String? firstName,
+    String? lastName,
+    String? phone,
+    String? specialty,
+  }) async {
+    final data = await _api.patch('/doctors/$doctorId/', body: {
+      if (firstName != null || lastName != null || phone != null)
+        'user': {
+          if (firstName != null) 'first_name': firstName,
+          if (lastName != null) 'last_name': lastName,
+          if (phone != null) 'phone': phone,
+        },
+      if (specialty != null) 'specialty': specialty,
+    });
+    return DoctorProfile.fromJson(data as Map<String, dynamic>);
+  }
+
+  /// Parent self-edit (or admin editing a parent): address/emergency contact
+  /// + basic user fields.
+  Future<ParentProfile> updateParent(
+    int parentId, {
+    String? firstName,
+    String? lastName,
+    String? phone,
+    String? address,
+    String? emergencyContact,
+  }) async {
+    final data = await _api.patch('/parents/$parentId/', body: {
+      if (firstName != null || lastName != null || phone != null)
+        'user': {
+          if (firstName != null) 'first_name': firstName,
+          if (lastName != null) 'last_name': lastName,
+          if (phone != null) 'phone': phone,
+        },
+      if (address != null) 'address': address,
+      if (emergencyContact != null) 'emergency_contact': emergencyContact,
+    });
+    return ParentProfile.fromJson(data as Map<String, dynamic>);
+  }
+
+  /// Section 11 "Delete account": soft-deletes (deactivates) the current
+  /// user server-side. Requires the current password. Throws ApiException
+  /// (400) on a wrong password — the caller is expected to surface that.
+  Future<void> deactivateAccount(String password) =>
+      _api.post('/me/deactivate/', body: {'password': password});
 }

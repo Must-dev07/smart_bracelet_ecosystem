@@ -23,6 +23,14 @@ Widget _wrap(BleService ble) {
   when(() => sync.start(interval: any(named: 'interval'))).thenReturn(null);
   when(() => sync.syncOnce()).thenAnswer((_) async => 0);
   final repo = MockMeasurementRepository();
+  // _ConnectionDetailsCard reads these every build (Section 6 telemetry);
+  // mocktail throws MissingStubError on any unstubbed call, so every
+  // BleService getter the live monitoring screen touches must be stubbed
+  // here even when a given test doesn't care about its value.
+  when(() => ble.lastPacketAt).thenReturn(null);
+  when(() => ble.connectedSince).thenReturn(null);
+  when(() => ble.packetsPerMinute).thenReturn(0);
+  when(() => ble.reconnectAttempts).thenReturn(0);
   return ProviderScope(
     overrides: [
       bleServiceProvider.overrideWithValue(ble),

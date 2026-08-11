@@ -68,6 +68,17 @@ void main() {
           throwsA(isA<UnauthenticatedException>()));
     });
 
+    test('sends PATCH with encoded body', () async {
+      final client = MockClient((request) async {
+        expect(request.method, 'PATCH');
+        expect(jsonDecode(request.body), {'first_name': 'Updated'});
+        return http.Response(jsonEncode({'first_name': 'Updated'}), 200);
+      });
+      final api = ApiClient(httpClient: client, store: store);
+      final data = await api.patch('/me/', body: {'first_name': 'Updated'});
+      expect(data['first_name'], 'Updated');
+    });
+
     test('throws ApiException on 4xx/5xx', () async {
       final client =
           MockClient((_) async => http.Response('{"detail":"bad"}', 400));

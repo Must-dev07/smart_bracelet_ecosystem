@@ -93,6 +93,21 @@ def test_query_raw_and_hourly(parent_client, baby, bracelet):
     assert first["count"] >= 1 and first["heart_rate_avg"] is not None
 
 
+def test_bucket_includes_battery_and_movement_averages(parent_client, baby, bracelet):
+    now = timezone.now()
+    for i in range(3):
+        MeasurementFactory(
+            baby=baby, bracelet=bracelet,
+            battery=90 - i, movement={"magnitude": 0.5 + i * 0.1},
+            recorded_at=now - timedelta(minutes=i),
+        )
+    resp = parent_client.get(URL, {"baby_id": baby.id, "granularity": "hour"})
+    assert resp.status_code == 200
+    bucket = resp.data["results"][0]
+    assert bucket["battery_avg"] is not None
+    assert bucket["movement_magnitude_avg"] is not None
+
+
 def test_query_requires_owned_baby(parent_client, baby):
     from tests.factories import BabyFactory
 

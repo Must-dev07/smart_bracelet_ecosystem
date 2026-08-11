@@ -1,4 +1,7 @@
-/// Alert detail: full message, triggering value, acknowledge action and the
+/// Alert detail: full message, triggering value, a lightweight audit trail
+/// (who acknowledged/resolved and when), acknowledge action (any role) and
+/// resolve action (doctor/admin only — see Alert.auto_resolves_on_acknowledge:
+/// vitals-based alerts stay open after a parent acknowledges them), plus the
 /// mandatory non-diagnostic disclaimer. Deep-link target for push taps.
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,6 +21,7 @@ class _AlertDetailScreenState extends ConsumerState<AlertDetailScreen> {
   Alert? _alert;
   bool _loading = true;
   bool _acking = false;
+  bool _resolving = false;
   String? _error;
   bool _started = false;
 
@@ -63,13 +67,33 @@ class _AlertDetailScreenState extends ConsumerState<AlertDetailScreen> {
             const SnackBar(content: Text('Could not acknowledge — retry.')));
       }
     } finally {
-      setState(() => _acking = false);
+      if (mounted) setState(() => _acking = false);
+    }
+  }
+
+  Future<void> _resolve() async {
+    if (_alert == null) return;
+    setState(() => _resolving = true);
+    try {
+      final updated = await ref.read(alertRepositoryProvider).resolve(_alert!.id);
+      setState(() => _alert = updated);
+      ref.invalidate(alertsProvider);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Could not resolve: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _resolving = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final l = L10n.of(context);
+    final role = ref.watch(authProvider).user?.role;
+    final canResolve = role == 'doctor' || role == 'admin';
+
     return Scaffold(
       appBar: AppBar(title: const Text('Alert details')),
       body: _loading
@@ -106,23 +130,103 @@ class _AlertDetailScreenState extends ConsumerState<AlertDetailScreen> {
                             Text('Baby: ${_alert!.babyName}'),
                             Text(
                                 'Triggered: ${_alert!.triggeredAt.toLocal().toString().split('.').first}'),
-                            if (_alert!.resolvedAt != null)
-                              Text(
-                                  'Resolved: ${_alert!.resolvedAt!.toLocal().toString().split('.').first}'),
                           ],
                         ),
                       ),
                     ),
                     const SizedBox(height: 16),
-                    if (_alert!.isActive)
-                      FilledButton.icon(
-                        onPressed: _acking ? null : _acknowledge,
-                        icon: const Icon(Icons.check),
-                        label: Text(l.t('acknowledge')),
+                    // ---- Audit trail (Section 8) ----
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Timeline',
+                                style: Theme.of(context).textTheme.titleSmall),
+                            const SizedBox(height: 8),
+                            _TimelineRow(
+                              icon: Icons.notifications_active_outlined,
+                              label: 'Triggered',
+                              time: _alert!.triggeredAt,
+                            ),
+                            _TimelineRow(
+                              icon: Icons.visibility_outlined,
+                              label: _alert!.acknowledgedByName != null
+                                  ? 'Acknowledged by ${_alert!.acknowledgedByName}'
+                                  : 'Not yet acknowledged',
+                              time: _alert!.acknowledgedAt,
+                              muted: _alert!.acknowledgedAt == null,
+                            ),
+                            _TimelineRow(
+                              icon: Icons.check_circle_outline,
+                              label: _alert!.resolvedByName != null
+                                  ? 'Resolved by ${_alert!.resolvedByName}'
+                                  : 'Not yet resolved',
+                              time: _alert!.resolvedAt,
+                              muted: _alert!.resolvedAt == null,
+                            ),
+                          ],
+                        ),
                       ),
+                    ),
+                    const SizedBox(height: 16),
+                    Wrap(spacing: 12, runSpacing: 8, children: [
+                      if (_alert!.acknowledgedAt == null)
+                        FilledButton.icon(
+                          onPressed: _acking ? null : _acknowledge,
+                          icon: const Icon(Icons.check),
+                          label: Text(l.t('acknowledge')),
+                        ),
+                      if (_alert!.isActive &&
+                          canResolve &&
+                          !_alert!.autoResolvesOnAcknowledge)
+                        OutlinedButton.icon(
+                          onPressed: _resolving ? null : _resolve,
+                          icon: const Icon(Icons.task_alt),
+                          label: const Text('Resolve'),
+                        ),
+                    ]),
+                    const SizedBox(height: 12),
                     const DisclaimerBanner(),
                   ],
                 ),
+    );
+  }
+}
+
+class _TimelineRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final DateTime? time;
+  final bool muted;
+  const _TimelineRow({
+    required this.icon,
+    required this.label,
+    this.time,
+    this.muted = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = muted ? Colors.grey : null;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: color),
+          const SizedBox(width: 8),
+          Expanded(child: Text(label, style: TextStyle(color: color))),
+          if (time != null)
+            Text(
+              time!.toLocal().toString().split('.').first,
+              style: Theme.of(context)
+                  .textTheme
+                  .labelSmall
+                  ?.copyWith(color: Colors.grey),
+            ),
+        ],
+      ),
     );
   }
 }

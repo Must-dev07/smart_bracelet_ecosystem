@@ -4,7 +4,7 @@
 class AppConfig {
   static const String apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://10.0.2.2:8080', // Android emulator -> host nginx
+    defaultValue: 'http://localhost:8080', // Android emulator -> host nginx
   );
 
   static const String apiV1 = '$apiBaseUrl/api/v1';
@@ -18,6 +18,15 @@ class AppConfig {
   static const String batteryCharUuid = '8e7f1a25-5b3c-4d2e-9f10-0a1b2c3d4e5f';
   static const String commandCharUuid = '8e7f1a26-5b3c-4d2e-9f10-0a1b2c3d4e5f';
   static const String deviceInfoCharUuid = '8e7f1a27-5b3c-4d2e-9f10-0a1b2c3d4e5f';
+
+  /// Default source for vitals data (Section 22). The ESP32 hardware isn't
+  /// available yet project-wide, so this defaults to the in-app simulator;
+  /// flip with --dart-define=USE_BLE_SIMULATOR=false once real hardware is
+  /// on hand, or toggle live from Settings (BLE preferences) — see
+  /// useSimulatedBleProvider in providers.dart, which is the actual
+  /// dependency-injection switch consumed by the app.
+  static const bool useSimulatedBleDefault =
+      bool.fromEnvironment('USE_BLE_SIMULATOR', defaultValue: true);
 
   /// Non-diagnostic disclaimer (Section 0 rule 10) — single source of truth
   /// for every alert-facing screen.

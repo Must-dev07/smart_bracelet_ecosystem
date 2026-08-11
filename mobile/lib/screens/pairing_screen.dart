@@ -2,10 +2,11 @@
 /// register bracelet on the backend (serial from device_info) → pair to the
 /// selected baby → live values within seconds.
 import 'package:flutter/material.dart';
-import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../models/models.dart';
 import '../providers/providers.dart';
+import '../services/vitals_source.dart';
 import '../utils/l10n.dart';
 
 class PairingScreen extends ConsumerStatefulWidget {
@@ -15,7 +16,7 @@ class PairingScreen extends ConsumerStatefulWidget {
 }
 
 class _PairingScreenState extends ConsumerState<PairingScreen> {
-  List<ScanResult> _results = [];
+  List<DiscoveredDevice> _results = [];
   bool _scanning = false;
   bool _connecting = false;
   String? _error;
@@ -36,7 +37,7 @@ class _PairingScreenState extends ConsumerState<PairingScreen> {
     }
   }
 
-  Future<void> _connect(ScanResult result) async {
+  Future<void> _connect(DiscoveredDevice result) async {
     final baby = ref.read(selectedBabyProvider) ??
         (ref.read(babiesProvider).value?.isNotEmpty == true
             ? ref.read(babiesProvider).value!.first
@@ -51,14 +52,24 @@ class _PairingScreenState extends ConsumerState<PairingScreen> {
     });
     try {
       final ble = ref.read(bleServiceProvider);
-      await ble.connect(result.device);
+      await ble.connect(result);
 
       // Serial comes from the device_info characteristic; fall back to BLE id.
-      final serial = ble.deviceSerial.isNotEmpty
-          ? ble.deviceSerial
-          : result.device.remoteId.str;
+      final serial = ble.deviceSerial.isNotEmpty ? ble.deviceSerial : result.id;
 
       final repo = ref.read(braceletRepositoryProvider);
+      final existing = ref.read(braceletsProvider).value
+          ?.where((b) => b.babyId == baby.id)
+          .toList();
+      if (existing != null && existing.isNotEmpty) {
+        final confirmed = await _confirmReplace(existing.first);
+        if (!confirmed) {
+          await ble.disconnect();
+          setState(() => _connecting = false);
+          return;
+        }
+      }
+
       // Register (or find existing) bracelet on the backend, then pair.
       int braceletId;
       try {
@@ -82,6 +93,28 @@ class _PairingScreenState extends ConsumerState<PairingScreen> {
     } finally {
       if (mounted) setState(() => _connecting = false);
     }
+  }
+
+  Future<bool> _confirmReplace(Bracelet current) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Replace bracelet?'),
+        content: Text(
+          'This baby already has "${current.displayName}" paired. Pairing '
+          'the new bracelet will unpair the old one (its history is kept).',
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel')),
+          FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Replace')),
+        ],
+      ),
+    );
+    return result ?? false;
   }
 
   @override
@@ -120,15 +153,12 @@ class _PairingScreenState extends ConsumerState<PairingScreen> {
                     itemCount: _results.length,
                     itemBuilder: (context, i) {
                       final r = _results[i];
-                      final name = r.device.platformName.isEmpty
-                          ? r.device.remoteId.str
-                          : r.device.platformName;
                       return Card(
                         margin: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 6),
                         child: ListTile(
                           leading: const Icon(Icons.watch),
-                          title: Text(name),
+                          title: Text(r.name),
                           subtitle: Text('RSSI ${r.rssi} dBm'),
                           trailing: _connecting
                               ? const CircularProgressIndicator()

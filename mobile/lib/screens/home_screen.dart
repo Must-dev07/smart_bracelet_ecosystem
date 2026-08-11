@@ -5,8 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/models.dart';
 import '../providers/providers.dart';
-import '../services/ble_service.dart';
+import '../services/vitals_source.dart';
 import '../utils/l10n.dart';
+import '../utils/units.dart';
 import '../widgets/common_widgets.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -22,16 +23,6 @@ class HomeScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(l.t('home')),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () => Navigator.of(context).pushNamed('/notifications'),
-          ),
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () => Navigator.of(context).pushNamed('/settings'),
-          ),
-        ],
       ),
       body: RefreshIndicator(
         onRefresh: () async {
@@ -114,7 +105,7 @@ class _BabyCard extends ConsumerWidget {
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         subtitle: Text(
             'Born ${baby.birthDate.toLocal().toString().split(' ').first} · '
-            '${(baby.weightGrams / 1000).toStringAsFixed(2)} kg'),
+            '${formatWeight(baby.weightGrams, ref.watch(unitsProvider))}'),
         trailing: const Icon(Icons.chevron_right),
         onTap: () {
           ref.read(selectedBabyProvider.notifier).state = baby;

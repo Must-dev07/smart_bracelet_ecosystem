@@ -9,27 +9,14 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import Shell from '@/components/Shell';
 import { Empty, ErrorBox, Loading, PageTitle, SeverityBadge, StatCard } from '@/components/ui';
-import { apiFetch } from '@/lib/api';
+import { fetchAllPages } from '@/lib/api';
 import { alertTypeLabel, fmtDateTime } from '@/lib/format';
-import type { Alert, Baby, Bracelet, Paginated } from '@/lib/types';
+import type { Alert, Baby, Bracelet } from '@/lib/types';
 
 interface DashboardData {
   babies: Baby[];
   bracelets: Bracelet[];
   activeAlerts: Alert[];
-}
-
-async function fetchAllPages<T>(basePath: string): Promise<T[]> {
-  const out: T[] = [];
-  let page = 1;
-  for (;;) {
-    const sep = basePath.includes('?') ? '&' : '?';
-    const res = await apiFetch<Paginated<T>>(`${basePath}${sep}page=${page}`);
-    out.push(...res.results);
-    if (!res.next || page > 50) break;
-    page += 1;
-  }
-  return out;
 }
 
 export default function DashboardPage() {

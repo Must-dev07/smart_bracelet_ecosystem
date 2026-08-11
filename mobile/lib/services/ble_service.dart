@@ -1,6 +1,10 @@
-/// BLE service: scan → connect → discover Health Service → subscribe to all
-/// vitals characteristics → stream parsed readings. Handles auto-reconnect
-/// with exponential backoff and exposes a connection-status stream for the UI.
+/// Real BLE implementation of VitalsSource (Section 22) — talks to actual
+/// ESP32 hardware over flutter_blue_plus. Scan → connect → discover Health
+/// Service → subscribe to all vitals characteristics → stream parsed
+/// readings. Handles auto-reconnect with exponential backoff and exposes a
+/// connection-status stream for the UI. See vitals_source.dart for the
+/// shared interface SimulatorVitalsSource also implements — no screen
+/// imports this file directly except providers.dart's DI wiring.
 ///
 /// Wire formats (must match firmware/ble/health_service.cpp):
 ///   heart_rate : float32 LE (bpm)
@@ -16,84 +20,59 @@ import 'dart:typed_data';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
 import '../core/app_config.dart';
-import '../models/models.dart';
+import 'vitals_source.dart';
 
-enum BleStatus { disconnected, scanning, connecting, connected, reconnecting }
+export 'vitals_source.dart' show BleStatus, LiveVitals, DiscoveredDevice, VitalsSource;
 
-class LiveVitals {
-  final double? heartRate;
-  final double? temperature;
-  final double? spo2;
-  final Map<String, dynamic>? movement;
-  final double? battery;
-  final bool skinContact;
-  final DateTime timestamp;
-
-  const LiveVitals({
-    this.heartRate,
-    this.temperature,
-    this.spo2,
-    this.movement,
-    this.battery,
-    this.skinContact = true,
-    required this.timestamp,
-  });
-
-  LiveVitals copyWith({
-    double? heartRate,
-    double? temperature,
-    double? spo2,
-    Map<String, dynamic>? movement,
-    double? battery,
-    bool? skinContact,
-  }) =>
-      LiveVitals(
-        heartRate: heartRate ?? this.heartRate,
-        temperature: temperature ?? this.temperature,
-        spo2: spo2 ?? this.spo2,
-        movement: movement ?? this.movement,
-        battery: battery ?? this.battery,
-        skinContact: skinContact ?? this.skinContact,
-        timestamp: DateTime.now(),
-      );
-
-  Measurement toMeasurement(int braceletId) => Measurement(
-        braceletId: braceletId,
-        heartRate: heartRate,
-        temperature: temperature,
-        spo2: spo2,
-        movement: movement,
-        battery: battery,
-        skinContact: skinContact,
-        recordedAt: timestamp,
-      );
-}
-
-class BleService {
+class BleService implements VitalsSource {
   final _statusCtrl = StreamController<BleStatus>.broadcast();
   final _vitalsCtrl = StreamController<LiveVitals>.broadcast();
 
+  @override
   Stream<BleStatus> get status => _statusCtrl.stream;
+  @override
   Stream<LiveVitals> get vitals => _vitalsCtrl.stream;
 
   BluetoothDevice? _device;
+  final Map<String, BluetoothDevice> _scanCache = {};
   LiveVitals _current = LiveVitals(timestamp: DateTime.now());
   StreamSubscription<BluetoothConnectionState>? _connSub;
   final List<StreamSubscription> _charSubs = [];
   int _reconnectAttempt = 0;
   bool _userDisconnected = false;
+  @override
   String firmwareVersion = '';
+  @override
   String deviceSerial = '';
 
+  // --- Connection telemetry (Section 6: packet rate, last packet time,
+  // reconnection attempts, connection duration, data freshness) ---
+  DateTime? _connectedSince;
+  DateTime? _lastPacketAt;
+  final List<DateTime> _recentPacketTimes = [];
+
+  @override
+  int get reconnectAttempts => _reconnectAttempt;
+  @override
+  DateTime? get connectedSince => _connectedSince;
+  @override
+  DateTime? get lastPacketAt => _lastPacketAt;
+
+  @override
+  int get packetsPerMinute {
+    final cutoff = DateTime.now().subtract(const Duration(minutes: 1));
+    _recentPacketTimes.removeWhere((t) => t.isBefore(cutoff));
+    return _recentPacketTimes.length;
+  }
+
   /// Scan for devices advertising the Health Service.
-  Future<List<ScanResult>> scan({Duration timeout = const Duration(seconds: 8)}) async {
+  @override
+  Future<List<DiscoveredDevice>> scan({Duration timeout = const Duration(seconds: 8)}) async {
     _statusCtrl.add(BleStatus.scanning);
-    final results = <ScanResult>[];
+    _scanCache.clear();
     final sub = FlutterBluePlus.scanResults.listen((batch) {
       for (final r in batch) {
-        if (!results.any((e) => e.device.remoteId == r.device.remoteId)) {
-          results.add(r);
-        }
+        _scanCache[r.device.remoteId.str] = r.device;
       }
     });
     await FlutterBluePlus.startScan(
@@ -103,10 +82,23 @@ class BleService {
     await FlutterBluePlus.isScanning.where((s) => s == false).first;
     await sub.cancel();
     _statusCtrl.add(_device == null ? BleStatus.disconnected : BleStatus.connected);
-    return results;
+    return [
+      for (final entry in _scanCache.entries)
+        DiscoveredDevice(
+          id: entry.key,
+          name: entry.value.platformName.isEmpty
+              ? entry.key
+              : entry.value.platformName,
+        ),
+    ];
   }
 
-  Future<void> connect(BluetoothDevice device) async {
+  @override
+  Future<void> connect(DiscoveredDevice discovered) async {
+    final device = _scanCache[discovered.id];
+    if (device == null) {
+      throw StateError('Device ${discovered.id} was not found in the last scan — scan again.');
+    }
     _userDisconnected = false;
     _device = device;
     _statusCtrl.add(BleStatus.connecting);
@@ -120,6 +112,7 @@ class BleService {
     }
     _reconnectAttempt = 0;
     await _subscribeAll(device);
+    _connectedSince = DateTime.now();
     _statusCtrl.add(BleStatus.connected);
 
     _connSub?.cancel();
@@ -190,6 +183,8 @@ class BleService {
     } else {
       return;
     }
+    _lastPacketAt = DateTime.now();
+    _recentPacketTimes.add(_lastPacketAt!);
     _vitalsCtrl.add(_current);
   }
 
@@ -197,13 +192,16 @@ class BleService {
   /// explicitly disconnects.
   void _scheduleReconnect() {
     if (_userDisconnected || _device == null) return;
+    _connectedSince = null;
     _statusCtrl.add(BleStatus.reconnecting);
     final delay = Duration(seconds: min(60, pow(2, _reconnectAttempt).toInt()));
     _reconnectAttempt++;
     Timer(delay, () async {
       if (_userDisconnected || _device == null) return;
+      final device = _device!;
       try {
-        await connect(_device!);
+        _scanCache[device.remoteId.str] = device;
+        await connect(DiscoveredDevice(id: device.remoteId.str, name: device.platformName));
       } catch (_) {
         _scheduleReconnect();
       }
@@ -211,6 +209,7 @@ class BleService {
   }
 
   /// Send a command (rename / reset / OTA-trigger) to the command characteristic.
+  @override
   Future<void> sendCommand(String command) async {
     final device = _device;
     if (device == null) throw StateError('Not connected');
@@ -222,6 +221,7 @@ class BleService {
     await cmd.write(command.codeUnits, withoutResponse: false);
   }
 
+  @override
   Future<void> disconnect() async {
     _userDisconnected = true;
     for (final s in _charSubs) {
@@ -231,10 +231,13 @@ class BleService {
     await _connSub?.cancel();
     await _device?.disconnect();
     _device = null;
+    _connectedSince = null;
+    _recentPacketTimes.clear();
     _statusCtrl.add(BleStatus.disconnected);
   }
 
   /// Logout: drop connection AND remove the OS bond (Section 5.3 spec).
+  @override
   Future<void> clearBond() async {
     final device = _device;
     await disconnect();
@@ -245,6 +248,7 @@ class BleService {
     }
   }
 
+  @override
   void dispose() {
     _statusCtrl.close();
     _vitalsCtrl.close();

@@ -1,6 +1,14 @@
-"""Alert list/acknowledge + BLE-lost reporting endpoint (mobile-observed event)."""
+"""Alert list/acknowledge/resolve + BLE-lost reporting endpoint.
+
+Acknowledge vs resolve (Section 8): anyone with access can acknowledge (it's
+just "I've seen this"). For one-off device/connectivity alerts that's the
+same as resolving — there's no future signal that would clear them on its
+own. For vitals-based alerts, only a doctor or admin can resolve, since
+resolving asserts the underlying concern is actually handled, not just seen.
+"""
 from django.utils import timezone
 from rest_framework import generics, permissions, status
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -30,6 +38,15 @@ class AlertListView(generics.ListAPIView):
         severity = self.request.query_params.get("severity")
         if severity:
             qs = qs.filter(severity=severity)
+        alert_type = self.request.query_params.get("type")
+        if alert_type:
+            qs = qs.filter(type=alert_type)
+        date_from = self.request.query_params.get("from")
+        if date_from:
+            qs = qs.filter(triggered_at__gte=date_from)
+        date_to = self.request.query_params.get("to")
+        if date_to:
+            qs = qs.filter(triggered_at__lte=date_to)
         return qs
 
 
@@ -50,9 +67,35 @@ class AlertAcknowledgeView(APIView):
         )
         alert.acknowledged_by = request.user
         alert.acknowledged_at = timezone.now()
-        if alert.resolved_at is None:
+        update_fields = ["acknowledged_by", "acknowledged_at"]
+        if alert.resolved_at is None and alert.auto_resolves_on_acknowledge:
             alert.resolved_at = timezone.now()
-        alert.save(update_fields=["acknowledged_by", "acknowledged_at", "resolved_at"])
+            alert.resolved_by = request.user
+            update_fields += ["resolved_at", "resolved_by"]
+        alert.save(update_fields=update_fields)
+        return Response(AlertSerializer(alert).data)
+
+
+class AlertResolveView(APIView):
+    """Doctor (assigned to the baby) or admin only. A parent can acknowledge
+    but cannot assert a vitals-based alert is resolved."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        alert = generics.get_object_or_404(
+            Alert.objects.filter(baby__in=babies_for(request.user)), pk=pk
+        )
+        if request.user.role not in ("doctor", "admin"):
+            raise PermissionDenied("Only a doctor or admin can resolve an alert.")
+        if alert.resolved_at is not None:
+            raise ValidationError("This alert is already resolved.")
+        alert.resolved_at = timezone.now()
+        alert.resolved_by = request.user
+        if alert.acknowledged_at is None:
+            alert.acknowledged_by = request.user
+            alert.acknowledged_at = timezone.now()
+        alert.save(update_fields=["resolved_at", "resolved_by", "acknowledged_by", "acknowledged_at"])
         return Response(AlertSerializer(alert).data)
 
 

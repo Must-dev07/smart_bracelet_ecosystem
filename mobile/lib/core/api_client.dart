@@ -60,7 +60,7 @@ class ApiClient {
     Object? body,
     Map<String, String>? query,
     bool auth = true,
-    bool _retried = false,
+    bool retried = false,
   }) async {
     var uri = Uri.parse('${AppConfig.apiV1}$path');
     if (query != null) uri = uri.replace(queryParameters: query);
@@ -75,16 +75,18 @@ class ApiClient {
         resp = await _http.post(uri, headers: headers, body: encoded);
       case 'PUT':
         resp = await _http.put(uri, headers: headers, body: encoded);
+      case 'PATCH':
+        resp = await _http.patch(uri, headers: headers, body: encoded);
       case 'DELETE':
         resp = await _http.delete(uri, headers: headers, body: encoded);
       default:
         throw ArgumentError('Unsupported method $method');
     }
 
-    if (resp.statusCode == 401 && auth && !_retried) {
+    if (resp.statusCode == 401 && auth && !retried) {
       if (await _tryRefresh()) {
         return request(method, path,
-            body: body, query: query, auth: auth, _retried: true);
+            body: body, query: query, auth: auth, retried: true);
       }
       await _store.clear();
       throw UnauthenticatedException();
@@ -103,6 +105,8 @@ class ApiClient {
       request('POST', path, body: body, auth: auth);
   Future<dynamic> put(String path, {Object? body}) =>
       request('PUT', path, body: body);
+  Future<dynamic> patch(String path, {Object? body}) =>
+      request('PATCH', path, body: body);
   Future<dynamic> delete(String path, {Object? body}) =>
       request('DELETE', path, body: body);
 }

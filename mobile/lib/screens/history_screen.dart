@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/models.dart';
 import '../providers/providers.dart';
 import '../utils/l10n.dart';
+import '../utils/units.dart';
 
 class HistoryScreen extends ConsumerStatefulWidget {
   const HistoryScreen({super.key});
@@ -61,6 +62,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   @override
   Widget build(BuildContext context) {
     final l = L10n.of(context);
+    final units = ref.watch(unitsProvider);
     return Scaffold(
       appBar: AppBar(title: Text(l.t('history')), actions: [
         IconButton(icon: const Icon(Icons.refresh), onPressed: _load),
@@ -95,7 +97,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                               ),
                               title: Text(
                                   '❤ ${m.heartRate?.toStringAsFixed(0) ?? '--'} bpm · '
-                                  '🌡 ${m.temperature?.toStringAsFixed(1) ?? '--'} °C · '
+                                  '🌡 ${m.temperature == null ? '--' : formatTemp(m.temperature!, units)} · '
                                   'SpO₂ ${m.spo2?.toStringAsFixed(0) ?? '--'} %'),
                               subtitle: Text(m.recordedAt
                                   .toLocal()

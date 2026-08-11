@@ -117,9 +117,28 @@ export interface Alert {
   value: number | null;
   triggered_at: string;
   resolved_at: string | null;
+  resolved_by: number | null;
+  resolved_by_name: string | null;
   acknowledged_by: number | null;
+  acknowledged_by_name: string | null;
   acknowledged_at: string | null;
+  auto_resolves_on_acknowledge: boolean;
   disclaimer: string;
+}
+
+export type NotificationCategory = 'alert' | 'bracelet' | 'medical' | 'system';
+
+export interface AppNotification {
+  id: number;
+  alert: number | null;
+  category: NotificationCategory;
+  channel: string;
+  title: string;
+  body: string;
+  status: string;
+  sent_at: string | null;
+  read_at: string | null;
+  created_at: string;
 }
 
 export interface Paginated<T> {

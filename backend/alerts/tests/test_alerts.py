@@ -34,13 +34,72 @@ def test_status_filter(parent_client, baby, bracelet):
     assert resp.data["count"] == 1
 
 
-def test_acknowledge_resolves(parent_client, parent, baby, bracelet):
+def test_acknowledge_vitals_alert_does_not_resolve_it(parent_client, parent, baby, bracelet):
+    # High-temp is vitals-based: a parent acknowledging it means "I've seen
+    # this", not "it's medically resolved" — it must stay open.
     alert = make_alert(baby, bracelet)
     resp = parent_client.post(f"/api/v1/alerts/{alert.id}/acknowledge/")
     assert resp.status_code == 200
+    assert resp.data["auto_resolves_on_acknowledge"] is False
     alert.refresh_from_db()
     assert alert.acknowledged_by == parent.user
+    assert alert.resolved_at is None
+
+
+def test_acknowledge_non_persistent_alert_resolves_it(parent_client, parent, baby, bracelet):
+    # battery_low is a one-off device event with no future signal that would
+    # clear it on its own — acknowledging IS resolving.
+    alert = make_alert(baby, bracelet, type=Alert.Type.BATTERY_LOW, severity=Alert.Severity.INFO)
+    resp = parent_client.post(f"/api/v1/alerts/{alert.id}/acknowledge/")
+    assert resp.status_code == 200
+    assert resp.data["auto_resolves_on_acknowledge"] is True
+    alert.refresh_from_db()
     assert alert.resolved_at is not None
+    assert alert.resolved_by == parent.user
+
+
+def test_parent_cannot_resolve_vitals_alert(parent_client, baby, bracelet):
+    alert = make_alert(baby, bracelet)
+    resp = parent_client.post(f"/api/v1/alerts/{alert.id}/resolve/")
+    assert resp.status_code == 403
+    alert.refresh_from_db()
+    assert alert.resolved_at is None
+
+
+def test_assigned_doctor_can_resolve_vitals_alert(doctor, doctor_client, baby, bracelet):
+    alert = make_alert(baby, bracelet)
+    resp = doctor_client.post(f"/api/v1/alerts/{alert.id}/resolve/")
+    assert resp.status_code == 200
+    alert.refresh_from_db()
+    assert alert.resolved_at is not None
+    assert alert.resolved_by == doctor.user
+    # Resolving implies review — acknowledged gets backfilled too.
+    assert alert.acknowledged_by == doctor.user
+
+
+def test_cannot_resolve_an_already_resolved_alert(doctor_client, baby, bracelet):
+    alert = make_alert(baby, bracelet, resolved_at=timezone.now())
+    resp = doctor_client.post(f"/api/v1/alerts/{alert.id}/resolve/")
+    assert resp.status_code == 400
+
+
+def test_acknowledged_by_name_populated(parent_client, parent, baby, bracelet):
+    parent.user.first_name, parent.user.last_name = "Marie", "Dupont"
+    parent.user.save()
+    alert = make_alert(baby, bracelet)
+    parent_client.post(f"/api/v1/alerts/{alert.id}/acknowledge/")
+    resp = parent_client.get(f"/api/v1/alerts/{alert.id}/")
+    assert resp.data["acknowledged_by_name"] == "Marie Dupont"
+
+
+def test_date_range_filter(parent_client, baby, bracelet):
+    old = make_alert(baby, bracelet, triggered_at=timezone.now() - timezone.timedelta(days=10))
+    recent = make_alert(baby, bracelet, type=Alert.Type.LOW_HR)
+    since = (timezone.now() - timezone.timedelta(days=1)).isoformat()
+    resp = parent_client.get("/api/v1/alerts/", {"from": since})
+    ids = {a["id"] for a in resp.data["results"]}
+    assert recent.id in ids
+    assert old.id not in ids
 
 
 def test_foreign_alert_invisible(doctor_client, baby, bracelet):

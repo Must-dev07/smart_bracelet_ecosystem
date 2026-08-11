@@ -10,7 +10,7 @@ class BraceletSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bracelet
         fields = [
-            "id", "serial_number", "firmware_version", "baby", "baby_name",
+            "id", "serial_number", "nickname", "firmware_version", "baby", "baby_name",
             "battery_level", "last_seen_at", "status", "created_at",
         ]
         read_only_fields = ["id", "baby", "last_seen_at", "created_at"]
@@ -22,9 +22,11 @@ class BraceletSerializer(serializers.ModelSerializer):
 
 
 class PairingSerializer(serializers.ModelSerializer):
+    baby_name = serializers.CharField(source="baby.name", read_only=True)
+
     class Meta:
         model = Pairing
-        fields = ["id", "bracelet", "baby", "paired_at", "unpaired_at"]
+        fields = ["id", "bracelet", "baby", "baby_name", "paired_at", "unpaired_at"]
 
 
 class PairRequestSerializer(serializers.Serializer):

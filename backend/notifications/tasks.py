@@ -35,7 +35,8 @@ def dispatch_alert_notifications(alert_id: int) -> int:
     sent = 0
     for user in targets:
         notification = Notification.objects.create(
-            user=user, alert=alert, channel=Notification.Channel.PUSH,
+            user=user, alert=alert, category=Notification.Category.ALERT,
+            channel=Notification.Channel.PUSH,
             title=title[:128], body=body[:512],
         )
         channel = CHANNELS.get(notification.channel)

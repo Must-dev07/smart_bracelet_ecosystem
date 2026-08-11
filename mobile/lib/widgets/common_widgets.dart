@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../core/app_config.dart';
 import '../core/app_theme.dart';
-import '../services/ble_service.dart';
+import '../services/vitals_source.dart';
 
 /// Non-diagnostic disclaimer — shown on onboarding and every alert screen.
 class DisclaimerBanner extends StatelessWidget {

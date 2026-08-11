@@ -156,9 +156,11 @@ SPECTACULAR_SETTINGS = {
 }
 
 CORS_ALLOWED_ORIGINS = [
-    o for o in os.environ.get("CORS_ALLOWED_ORIGINS", "http://localhost:3001").split(",") if o
+    o for o in os.environ.get(
+        "CORS_ALLOWED_ORIGINS",
+        "http://localhost:3100,http://localhost:8081"
+    ).split(",") if o
 ]
-
 # ---------------------------------------------------------------------------
 # Celery
 # ---------------------------------------------------------------------------

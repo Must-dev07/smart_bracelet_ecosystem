@@ -4,7 +4,7 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import DeviceToken, Notification
+from .models import DeviceToken, Notification, NotificationPreference
 from .serializers import DeviceTokenSerializer, NotificationSerializer
 
 
@@ -16,7 +16,19 @@ class NotificationListView(generics.ListAPIView):
         qs = Notification.objects.filter(user=self.request.user)
         if self.request.query_params.get("unread") == "true":
             qs = qs.filter(read_at__isnull=True)
+        category = self.request.query_params.get("category")
+        if category:
+            qs = qs.filter(category=category)
         return qs
+
+
+class NotificationDetailView(generics.DestroyAPIView):
+    """Delete a single notification (Section 9)."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Notification.objects.filter(user=self.request.user)
 
 
 class NotificationReadView(APIView):
@@ -31,6 +43,46 @@ class NotificationReadView(APIView):
             notification.status = Notification.Status.READ
             notification.save(update_fields=["read_at", "status"])
         return Response(NotificationSerializer(notification).data)
+
+
+class NotificationReadAllView(APIView):
+    """Mark every unread notification belonging to the current user as read."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        updated = Notification.objects.filter(
+            user=request.user, read_at__isnull=True
+        ).update(read_at=timezone.now(), status=Notification.Status.READ)
+        return Response({"marked_read": updated})
+
+
+class NotificationPreferencesView(APIView):
+    """Section 11: mute bracelet/medical/system notifications. `alert` is
+    deliberately not accepted here — see NotificationPreference's docstring.
+    GET/PATCH body shape: {"bracelet": bool, "medical": bool, "system": bool}
+    (a category absent from the response means "enabled", the default)."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        return Response(self._current(request.user))
+
+    def patch(self, request):
+        for category, enabled in request.data.items():
+            if category not in NotificationPreference.MutableCategory.values:
+                continue
+            NotificationPreference.objects.update_or_create(
+                user=request.user, category=category, defaults={"enabled": bool(enabled)}
+            )
+        return Response(self._current(request.user))
+
+    def _current(self, user):
+        muted = set(
+            NotificationPreference.objects.filter(user=user, enabled=False)
+            .values_list("category", flat=True)
+        )
+        return {c: c not in muted for c in NotificationPreference.MutableCategory.values}
 
 
 class DeviceTokenRegisterView(APIView):

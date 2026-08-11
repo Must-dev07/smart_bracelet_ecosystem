@@ -134,7 +134,9 @@ class MeasurementIngestQueryView(APIView):
         buckets: dict[int, dict] = {}
         for m in qs.iterator(chunk_size=1000):
             key = int(m.recorded_at.timestamp()) // seconds * seconds
-            b = buckets.setdefault(key, {"hr": [], "temp": [], "spo2": [], "count": 0})
+            b = buckets.setdefault(
+                key, {"hr": [], "temp": [], "spo2": [], "battery": [], "movement": [], "count": 0}
+            )
             b["count"] += 1
             if m.heart_rate is not None:
                 b["hr"].append(m.heart_rate)
@@ -142,6 +144,10 @@ class MeasurementIngestQueryView(APIView):
                 b["temp"].append(m.temperature)
             if m.spo2 is not None:
                 b["spo2"].append(m.spo2)
+            if m.battery is not None:
+                b["battery"].append(m.battery)
+            if m.movement and m.movement.get("magnitude") is not None:
+                b["movement"].append(m.movement["magnitude"])
 
         def avg(xs):
             return round(sum(xs) / len(xs), 2) if xs else None
@@ -152,6 +158,8 @@ class MeasurementIngestQueryView(APIView):
                 "heart_rate_avg": avg(v["hr"]),
                 "temperature_avg": avg(v["temp"]),
                 "spo2_avg": avg(v["spo2"]),
+                "battery_avg": avg(v["battery"]),
+                "movement_magnitude_avg": avg(v["movement"]),
                 "heart_rate_min": min(v["hr"]) if v["hr"] else None,
                 "heart_rate_max": max(v["hr"]) if v["hr"] else None,
                 "count": v["count"],

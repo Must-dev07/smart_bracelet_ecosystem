@@ -23,6 +23,7 @@ export default function AlertsPage() {
   const [status, setStatus] = useState<StatusFilter>('active');
   const [severity, setSeverity] = useState<SeverityFilter>('all');
   const [ackBusy, setAckBusy] = useState<number | null>(null);
+  const [resolveBusy, setResolveBusy] = useState<number | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -60,6 +61,18 @@ export default function AlertsPage() {
       setError(e instanceof Error ? e.message : 'Failed to acknowledge.');
     } finally {
       setAckBusy(null);
+    }
+  }
+
+  async function resolve(id: number) {
+    setResolveBusy(id);
+    try {
+      await apiFetch(`/api/v1/alerts/${id}/resolve/`, { method: 'POST' });
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to resolve.');
+    } finally {
+      setResolveBusy(null);
     }
   }
 
@@ -135,19 +148,40 @@ export default function AlertsPage() {
                         <span className="text-xs font-medium text-amber-600">Active</span>
                       )}
                       {a.acknowledged_at ? (
-                        <span className="block text-[11px] text-slate-400">ack {fmtDateTime(a.acknowledged_at)}</span>
+                        <span className="block text-[11px] text-slate-400">
+                          ack {fmtDateTime(a.acknowledged_at)}
+                          {a.acknowledged_by_name ? ` by ${a.acknowledged_by_name}` : ''}
+                        </span>
+                      ) : null}
+                      {a.resolved_at ? (
+                        <span className="block text-[11px] text-slate-400">
+                          resolved {fmtDateTime(a.resolved_at)}
+                          {a.resolved_by_name ? ` by ${a.resolved_by_name}` : ''}
+                        </span>
                       ) : null}
                     </td>
                     <td>
-                      {!a.acknowledged_at ? (
-                        <button
-                          className="btn-secondary !px-3 !py-1 text-xs"
-                          disabled={ackBusy === a.id}
-                          onClick={() => acknowledge(a.id)}
-                        >
-                          {ackBusy === a.id ? '…' : 'Acknowledge'}
-                        </button>
-                      ) : null}
+                      <div className="flex gap-2">
+                        {!a.acknowledged_at ? (
+                          <button
+                            className="btn-secondary !px-3 !py-1 text-xs"
+                            disabled={ackBusy === a.id}
+                            onClick={() => acknowledge(a.id)}
+                          >
+                            {ackBusy === a.id ? '…' : 'Acknowledge'}
+                          </button>
+                        ) : null}
+                        {!a.resolved_at ? (
+                          <button
+                            className="btn-primary !px-3 !py-1 text-xs"
+                            disabled={resolveBusy === a.id}
+                            onClick={() => resolve(a.id)}
+                            title="Assert the underlying concern has been handled"
+                          >
+                            {resolveBusy === a.id ? '…' : 'Resolve'}
+                          </button>
+                        ) : null}
+                      </div>
                     </td>
                   </tr>
                 ))}

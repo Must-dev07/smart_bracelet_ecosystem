@@ -3,33 +3,52 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/app_theme.dart';
 import 'providers/providers.dart';
+import 'screens/admin_babies_screen.dart';
+import 'screens/admin_bracelets_screen.dart';
+import 'screens/admin_doctors_screen.dart';
+import 'screens/admin_parents_screen.dart';
+import 'screens/admin_users_screen.dart';
 import 'screens/alert_detail_screen.dart';
 import 'screens/alerts_screen.dart';
 import 'screens/baby_details_screen.dart';
 import 'screens/bracelet_info_screen.dart';
+import 'screens/doctor_requests_screen.dart';
 import 'screens/forgot_password_screen.dart';
 import 'screens/graphs_screen.dart';
 import 'screens/history_screen.dart';
-import 'screens/home_screen.dart';
+import 'screens/home_router.dart';
 import 'screens/live_monitoring_screen.dart';
 import 'screens/login_screen.dart';
+import 'screens/medical_history_screen.dart';
+import 'screens/notification_preferences_screen.dart';
 import 'screens/notifications_screen.dart';
+import 'screens/pairing_history_screen.dart';
 import 'screens/pairing_screen.dart';
+import 'screens/privacy_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/register_screen.dart';
+import 'screens/request_doctor_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/splash_screen.dart';
+import 'services/app_settings_store.dart';
 import 'services/push_service.dart';
 import 'utils/l10n.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const ProviderScope(child: BraceletApp()));
+  final prefs = await SharedPreferences.getInstance();
+  runApp(ProviderScope(
+    overrides: [
+      settingsStoreProvider.overrideWithValue(AppSettingsStore(prefs)),
+    ],
+    child: const BraceletApp(),
+  ));
 }
 
 class BraceletApp extends ConsumerStatefulWidget {
@@ -75,18 +94,29 @@ class _BraceletAppState extends ConsumerState<BraceletApp> {
         '/login': (_) => const LoginScreen(),
         '/register': (_) => const RegisterScreen(),
         '/forgot-password': (_) => const ForgotPasswordScreen(),
-        '/home': (_) => const HomeScreen(),
+        '/home': (_) => const HomeRouter(),
         '/baby-details': (_) => const BabyDetailsScreen(),
         '/live': (_) => const LiveMonitoringScreen(),
         '/graphs': (_) => const GraphsScreen(),
         '/history': (_) => const HistoryScreen(),
+        '/medical-history': (_) => const MedicalHistoryScreen(),
+        '/request-doctor': (_) => const RequestDoctorScreen(),
+        '/doctor-requests': (_) => const DoctorRequestsScreen(),
         '/alerts': (_) => const AlertsScreen(),
         '/alert-detail': (_) => const AlertDetailScreen(),
         '/settings': (_) => const SettingsScreen(),
         '/pairing': (_) => const PairingScreen(),
         '/bracelet-info': (_) => const BraceletInfoScreen(),
+        '/bracelet-pairing-history': (_) => const PairingHistoryScreen(),
         '/profile': (_) => const ProfileScreen(),
         '/notifications': (_) => const NotificationsScreen(),
+        '/notification-preferences': (_) => const NotificationPreferencesScreen(),
+        '/privacy': (_) => const PrivacyScreen(),
+        '/admin-users': (_) => const AdminUsersScreen(),
+        '/admin-doctors': (_) => const AdminDoctorsScreen(),
+        '/admin-parents': (_) => const AdminParentsScreen(),
+        '/admin-babies': (_) => const AdminBabiesScreen(),
+        '/admin-bracelets': (_) => const AdminBraceletsScreen(),
       },
     );
   }
