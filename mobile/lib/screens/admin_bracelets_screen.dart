@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/providers.dart';
+import '../widgets/common_widgets.dart';
 
 class AdminBraceletsScreen extends ConsumerStatefulWidget {
   const AdminBraceletsScreen({super.key});
@@ -113,19 +114,9 @@ class _AdminBraceletsScreenState extends ConsumerState<AdminBraceletsScreen> {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('Could not load bracelets: $e'),
-                    const SizedBox(height: 8),
-                    OutlinedButton.icon(
-                      onPressed: () => ref.invalidate(braceletsProvider),
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('Retry'),
-                    ),
-                  ],
-                ),
+              error: (e, _) => ErrorRetry(
+                message: 'Could not load bracelets: $e',
+                onRetry: () => ref.invalidate(braceletsProvider),
               ),
             ),
           ),

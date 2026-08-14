@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/providers.dart';
+import '../widgets/common_widgets.dart';
 
 class AdminParentsScreen extends ConsumerStatefulWidget {
   const AdminParentsScreen({super.key});
@@ -88,19 +89,9 @@ class _AdminParentsScreenState extends ConsumerState<AdminParentsScreen> {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('Could not load parents: $e'),
-                    const SizedBox(height: 8),
-                    OutlinedButton.icon(
-                      onPressed: () => ref.invalidate(parentsDirectoryProvider),
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('Retry'),
-                    ),
-                  ],
-                ),
+              error: (e, _) => ErrorRetry(
+                message: 'Could not load parents: $e',
+                onRetry: () => ref.invalidate(parentsDirectoryProvider),
               ),
             ),
           ),

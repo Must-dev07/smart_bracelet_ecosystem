@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/models.dart';
 import '../providers/providers.dart';
+import '../widgets/common_widgets.dart';
 
 class AdminUsersScreen extends ConsumerStatefulWidget {
   const AdminUsersScreen({super.key});
@@ -66,19 +67,9 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('Could not load users: $e'),
-                    const SizedBox(height: 8),
-                    OutlinedButton.icon(
-                      onPressed: () => ref.invalidate(allUsersProvider),
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('Retry'),
-                    ),
-                  ],
-                ),
+              error: (e, _) => ErrorRetry(
+                message: 'Could not load users: $e',
+                onRetry: () => ref.invalidate(allUsersProvider),
               ),
             ),
           ),

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/providers.dart';
+import '../widgets/common_widgets.dart';
 
 class AdminDoctorsScreen extends ConsumerStatefulWidget {
   const AdminDoctorsScreen({super.key});
@@ -87,19 +88,9 @@ class _AdminDoctorsScreenState extends ConsumerState<AdminDoctorsScreen> {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('Could not load doctors: $e'),
-                    const SizedBox(height: 8),
-                    OutlinedButton.icon(
-                      onPressed: () => ref.invalidate(doctorsDirectoryProvider),
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('Retry'),
-                    ),
-                  ],
-                ),
+              error: (e, _) => ErrorRetry(
+                message: 'Could not load doctors: $e',
+                onRetry: () => ref.invalidate(doctorsDirectoryProvider),
               ),
             ),
           ),

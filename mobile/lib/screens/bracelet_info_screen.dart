@@ -20,12 +20,35 @@ class BraceletInfoScreen extends ConsumerWidget {
     final ble = ref.read(bleServiceProvider);
     final status = ref.watch(bleStatusProvider).value ?? BleStatus.disconnected;
     final connectedId = ref.watch(connectedBraceletIdProvider);
+    final role = ref.watch(authProvider).user?.role;
+    final canPair = role == 'parent';
 
     return Scaffold(
       appBar: AppBar(title: const Text('Bracelets')),
       body: bracelets.when(
         data: (list) => list.isEmpty
-            ? const Center(child: Text('No bracelet registered.'))
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.watch_off_outlined, size: 64),
+                      const SizedBox(height: 12),
+                      const Text('No bracelet registered.'),
+                      if (canPair) ...[
+                        const SizedBox(height: 12),
+                        FilledButton.icon(
+                          onPressed: () =>
+                              Navigator.of(context).pushNamed('/pairing'),
+                          icon: const Icon(Icons.bluetooth),
+                          label: const Text('Pair a bracelet'),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              )
             : RefreshIndicator(
                 onRefresh: () async => ref.invalidate(braceletsProvider),
                 child: ListView(
@@ -47,6 +70,13 @@ class BraceletInfoScreen extends ConsumerWidget {
         error: (_, __) =>
             const Center(child: Text('Could not load bracelets (offline?).')),
       ),
+      floatingActionButton: canPair
+          ? FloatingActionButton.extended(
+              onPressed: () => Navigator.of(context).pushNamed('/pairing'),
+              icon: const Icon(Icons.bluetooth),
+              label: const Text('Pair bracelet'),
+            )
+          : null,
     );
   }
 }

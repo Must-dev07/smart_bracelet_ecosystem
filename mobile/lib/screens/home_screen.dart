@@ -79,9 +79,12 @@ class HomeScreen extends ConsumerWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Navigator.of(context).pushNamed('/pairing'),
-        icon: const Icon(Icons.bluetooth),
-        label: Text(l.t('pair_bracelet')),
+        onPressed: () {
+          ref.read(selectedBabyProvider.notifier).state = null;
+          Navigator.of(context).pushNamed('/baby-details');
+        },
+        icon: const Icon(Icons.add),
+        label: const Text('Add baby'),
       ),
     );
   }
@@ -116,12 +119,12 @@ class _BabyCard extends ConsumerWidget {
   }
 }
 
-class _EmptyBabies extends StatelessWidget {
+class _EmptyBabies extends ConsumerWidget {
   final L10n l;
   const _EmptyBabies({required this.l});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -132,7 +135,10 @@ class _EmptyBabies extends StatelessWidget {
             const Text('No baby registered yet.'),
             const SizedBox(height: 12),
             FilledButton.icon(
-              onPressed: () => Navigator.of(context).pushNamed('/baby-details'),
+              onPressed: () {
+                ref.read(selectedBabyProvider.notifier).state = null;
+                Navigator.of(context).pushNamed('/baby-details');
+              },
               icon: const Icon(Icons.add),
               label: const Text('Add your baby'),
             ),

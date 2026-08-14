@@ -1,10 +1,42 @@
 /// Shared widgets: disclaimer banner (Section 0 rule 10), vital tile,
-/// connection status chip, severity badge.
+/// connection status chip, severity badge, error-with-retry state.
 import 'package:flutter/material.dart';
 
 import '../core/app_config.dart';
 import '../core/app_theme.dart';
 import '../services/vitals_source.dart';
+
+/// Standard "failed to load, here's why, try again" state — used by every
+/// list screen backed by an AsyncValue.error branch (the admin directories,
+/// bracelets, etc). Centralised so the retry affordance can't silently go
+/// missing from one screen the way it originally did on all five of these
+/// before this widget existed (Section 20 UI consistency).
+class ErrorRetry extends StatelessWidget {
+  final String message;
+  final VoidCallback onRetry;
+  const ErrorRetry({super.key, required this.message, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(message, textAlign: TextAlign.center),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Retry'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 /// Non-diagnostic disclaimer — shown on onboarding and every alert screen.
 class DisclaimerBanner extends StatelessWidget {
