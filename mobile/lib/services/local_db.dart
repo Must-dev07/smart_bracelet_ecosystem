@@ -1,12 +1,12 @@
-/// Offline-first SQLite store: every BLE measurement is written here FIRST,
-/// then the SyncService pushes unsynced rows to the backend in batches and
-/// marks them synced. The app stays fully usable with no network.
-///
-/// A row that keeps failing to upload (network error, server rejecting the
-/// batch, etc.) is NOT retried forever silently — after
-/// [SyncService.failThreshold] attempts it's classified "failed" rather than
-/// "pending", so the Settings screen can show it separately and offer a
-/// manual retry instead of it just quietly never syncing.
+// Offline-first SQLite store: every BLE measurement is written here FIRST,
+// then the SyncService pushes unsynced rows to the backend in batches and
+// marks them synced. The app stays fully usable with no network.
+//
+// A row that keeps failing to upload (network error, server rejecting the
+// batch, etc.) is NOT retried forever silently — after
+// [SyncService.failThreshold] attempts it's classified "failed" rather than
+// "pending", so the Settings screen can show it separately and offer a
+// manual retry instead of it just quietly never syncing.
 import 'dart:convert';
 
 import 'package:path/path.dart' as p;

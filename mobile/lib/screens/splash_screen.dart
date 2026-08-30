@@ -1,4 +1,4 @@
-/// Splash: waits for the auth restore, then routes to Home or Login.
+// Splash: waits for the auth restore, then routes to Home or Login.
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

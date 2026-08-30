@@ -1,16 +1,16 @@
-/// Shared widgets: disclaimer banner (Section 0 rule 10), vital tile,
-/// connection status chip, severity badge, error-with-retry state.
+// Shared widgets: disclaimer banner (Section 0 rule 10), vital tile,
+// connection status chip, severity badge, error-with-retry state.
 import 'package:flutter/material.dart';
 
 import '../core/app_config.dart';
 import '../core/app_theme.dart';
 import '../services/vitals_source.dart';
 
-/// Standard "failed to load, here's why, try again" state — used by every
-/// list screen backed by an AsyncValue.error branch (the admin directories,
-/// bracelets, etc). Centralised so the retry affordance can't silently go
-/// missing from one screen the way it originally did on all five of these
-/// before this widget existed (Section 20 UI consistency).
+// Standard "failed to load, here's why, try again" state — used by every
+// list screen backed by an AsyncValue.error branch (the admin directories,
+// bracelets, etc). Centralised so the retry affordance can't silently go
+// missing from one screen the way it originally did on all five of these
+// before this widget existed (Section 20 UI consistency).
 class ErrorRetry extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;

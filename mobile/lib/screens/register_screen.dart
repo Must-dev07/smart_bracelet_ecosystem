@@ -1,4 +1,4 @@
-/// Parent registration (doctors register via the web dashboard/admin).
+// Parent registration (doctors register via the web dashboard/admin).
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

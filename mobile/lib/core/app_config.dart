@@ -1,6 +1,6 @@
-/// Build-time configuration. Point the app at a backend with:
-///   flutter run --dart-define=API_BASE_URL=http://192.168.1.10:8080
-/// (see docs/deployment-guide.md).
+// Build-time configuration. Point the app at a backend with:
+//   flutter run --dart-define=API_BASE_URL=http://192.168.1.10:8080
+// (see docs/deployment-guide.md).
 class AppConfig {
   static const String apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',

@@ -1,6 +1,6 @@
-/// Repository layer: the only place that talks to ApiClient. Screens/providers
-/// depend on these interfaces, so unit tests mock repositories, and repository
-/// tests mock the ApiClient.
+// Repository layer: the only place that talks to ApiClient. Screens/providers
+// depend on these interfaces, so unit tests mock repositories, and repository
+// tests mock the ApiClient.
 import '../core/api_client.dart';
 import '../core/secure_store.dart';
 import '../models/models.dart';

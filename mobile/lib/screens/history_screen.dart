@@ -1,5 +1,5 @@
-/// History: paginated raw measurements from the backend, falling back to the
-/// local SQLite cache when offline (offline-first requirement).
+// History: paginated raw measurements from the backend, falling back to the
+// local SQLite cache when offline (offline-first requirement).
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

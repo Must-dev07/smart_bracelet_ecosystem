@@ -1,5 +1,5 @@
-/// Domain entities mirroring the backend API payloads.
-/// Pure Dart (no Flutter imports) so they are trivially unit-testable.
+// Domain entities mirroring the backend API payloads.
+// Pure Dart (no Flutter imports) so they are trivially unit-testable.
 library models;
 
 class User {

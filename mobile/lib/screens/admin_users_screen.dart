@@ -1,6 +1,6 @@
-/// Admin-only: every account on the platform (GET /users/), searchable by
-/// name/email, with a role badge. Read-only here — role changes / account
-/// deactivation are an admin.py / future workflow, not exposed via this API.
+// Admin-only: every account on the platform (GET /users/), searchable by
+// name/email, with a role badge. Read-only here — role changes / account
+// deactivation are an admin.py / future workflow, not exposed via this API.
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -96,7 +96,7 @@ class _RoleBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(.15),
+        color: color.withOpacity(0.15),
         borderRadius: BorderRadius.circular(999),
         border: Border.all(color: color),
       ),

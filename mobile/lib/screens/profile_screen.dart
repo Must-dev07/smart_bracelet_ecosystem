@@ -1,11 +1,11 @@
-/// Profile screen, covering Section 10 for every role: parents can edit
-/// address/emergency contact, doctors can edit specialty, and everyone can
-/// edit their own name/phone. Doctor and parent role-specific fields live on
-/// the Doctor/Parent model, so editing them goes through
-/// PATCH /doctors/{id}/ or /parents/{id}/ (self-or-admin permitted); the
-/// doctor/parent's own id is discovered from /me/'s doctor_profile_id /
-/// parent_profile_id (see UserSummarySerializer) rather than the admin-only
-/// list endpoints.
+// Profile screen, covering Section 10 for every role: parents can edit
+// address/emergency contact, doctors can edit specialty, and everyone can
+// edit their own name/phone. Doctor and parent role-specific fields live on
+// the Doctor/Parent model, so editing them goes through
+// PATCH /doctors/{id}/ or /parents/{id}/ (self-or-admin permitted); the
+// doctor/parent's own id is discovered from /me/'s doctor_profile_id /
+// parent_profile_id (see UserSummarySerializer) rather than the admin-only
+// list endpoints.
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

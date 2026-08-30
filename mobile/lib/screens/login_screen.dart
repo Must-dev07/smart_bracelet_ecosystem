@@ -1,4 +1,4 @@
-/// Login screen with validation, error surfacing and links to register/forgot.
+// Login screen with validation, error surfacing and links to register/forgot.
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

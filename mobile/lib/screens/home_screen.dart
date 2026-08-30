@@ -1,5 +1,5 @@
-/// Home dashboard: baby cards, latest vitals snapshot, active alerts count,
-/// BLE status, quick navigation. Bottom navigation shell for the app.
+// Home dashboard: baby cards, latest vitals snapshot, active alerts count,
+// BLE status, quick navigation. Bottom navigation shell for the app.
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

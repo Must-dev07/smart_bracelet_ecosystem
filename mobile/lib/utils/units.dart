@@ -1,7 +1,7 @@
-/// Unit display helpers (Section 11). The backend always stores/validates
-/// metric (grams, °C) — this layer only affects how numbers are *displayed*,
-/// never what's sent over the API, so switching units can never corrupt data
-/// or trip a backend validation range meant for the other unit.
+// Unit display helpers (Section 11). The backend always stores/validates
+// metric (grams, °C) — this layer only affects how numbers are *displayed*,
+// never what's sent over the API, so switching units can never corrupt data
+// or trip a backend validation range meant for the other unit.
 library;
 
 /// Weight: backend stores grams. 'imperial' displays lb+oz.

@@ -1,14 +1,14 @@
-/// In-app BLE simulator (Section 22) — implements the same VitalsSource
-/// interface as the real hardware (ble_service.dart), so every screen works
-/// identically against either. Exists because the ESP32 hardware isn't
-/// available project-wide yet; switching to real hardware later is a
-/// one-line change in providers.dart's `bleServiceProvider`, not a rewrite
-/// of any screen.
-///
-/// Scenario vocabulary intentionally matches
-/// tools/simulator/bracelet_simulator.py (normal/fever/hypoxia/tachy/
-/// lowbatt) so a dev reading the Python simulator's README already knows
-/// what each simulated device here does.
+// In-app BLE simulator (Section 22) — implements the same VitalsSource
+// interface as the real hardware (ble_service.dart), so every screen works
+// identically against either. Exists because the ESP32 hardware isn't
+// available project-wide yet; switching to real hardware later is a
+// one-line change in providers.dart's `bleServiceProvider`, not a rewrite
+// of any screen.
+//
+// Scenario vocabulary intentionally matches
+// tools/simulator/bracelet_simulator.py (normal/fever/hypoxia/tachy/
+// lowbatt) so a dev reading the Python simulator's README already knows
+// what each simulated device here does.
 import 'dart:async';
 import 'dart:math';
 

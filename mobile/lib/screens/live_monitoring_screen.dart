@@ -1,6 +1,6 @@
-/// Live Monitoring: subscribes to the BLE vitals stream, shows real-time
-/// tiles, persists every reading to SQLite (offline-first), reports BLE loss
-/// to the backend, and shows the reconnection status prominently.
+// Live Monitoring: subscribes to the BLE vitals stream, shows real-time
+// tiles, persists every reading to SQLite (offline-first), reports BLE loss
+// to the backend, and shows the reconnection status prominently.
 import 'dart:async';
 
 import 'package:flutter/material.dart';

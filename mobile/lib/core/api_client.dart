@@ -1,8 +1,8 @@
-/// HTTP client with JWT bearer injection and transparent silent refresh.
-/// On 401: tries POST /auth/refresh once with the stored refresh token,
-/// persists rotated tokens, replays the original request. On refresh failure
-/// the session is cleared and an [UnauthenticatedException] is thrown so the
-/// UI can route to Login.
+// HTTP client with JWT bearer injection and transparent silent refresh.
+// On 401: tries POST /auth/refresh once with the stored refresh token,
+// persists rotated tokens, replays the original request. On refresh failure
+// the session is cleared and an [UnauthenticatedException] is thrown so the
+// UI can route to Login.
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;

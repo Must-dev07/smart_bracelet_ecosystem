@@ -1,5 +1,5 @@
-/// Medical palette (Section 8): blue / white / soft green, high contrast,
-/// large touch targets. Light + dark variants.
+// Medical palette (Section 8): blue / white / soft green, high contrast,
+// large touch targets. Light + dark variants.
 import 'package:flutter/material.dart';
 
 class AppColors {
