@@ -1,5 +1,5 @@
-/// App entry point: Riverpod scope, theming (medical palette + dark mode),
-/// route table, FCM init and the auth-gated navigation shell.
+// App entry point: Riverpod scope, theming (medical palette + dark mode),
+// route table, FCM init and the auth-gated navigation shell.
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

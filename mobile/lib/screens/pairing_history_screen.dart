@@ -1,6 +1,6 @@
-/// History of every pair/unpair cycle for the selected bracelet (Section 5).
-/// Backend-scoped: parent sees their own bracelets, doctor sees their
-/// patients', admin sees everything.
+// History of every pair/unpair cycle for the selected bracelet (Section 5).
+// Backend-scoped: parent sees their own bracelets, doctor sees their
+// patients', admin sees everything.
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

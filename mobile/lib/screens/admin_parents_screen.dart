@@ -1,5 +1,5 @@
-/// Admin: parent directory (GET /parents/) with contact info, searchable,
-/// showing how many babies each parent has registered.
+// Admin: parent directory (GET /parents/) with contact info, searchable,
+// showing how many babies each parent has registered.
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -18,7 +18,7 @@ class _AdminParentsScreenState extends ConsumerState<AdminParentsScreen> {
   @override
   Widget build(BuildContext context) {
     final parents = ref.watch(parentsDirectoryProvider);
-    final babies = ref.watch(babiesProvider);
+    /*final babies = ref.watch(babiesProvider);*/
 
     return Scaffold(
       appBar: AppBar(title: const Text('Parents')),

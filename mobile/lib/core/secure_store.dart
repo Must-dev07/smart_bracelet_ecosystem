@@ -1,5 +1,5 @@
-/// Thin wrapper over flutter_secure_storage for JWT + user payload.
-/// Logout clears everything here plus BLE bond state (see AuthRepository).
+// Thin wrapper over flutter_secure_storage for JWT + user payload.
+// Logout clears everything here plus BLE bond state (see AuthRepository).
 import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';

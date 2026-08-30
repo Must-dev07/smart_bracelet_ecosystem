@@ -1,4 +1,4 @@
-/// Riverpod dependency graph + app-level state providers.
+// Riverpod dependency graph + app-level state providers.
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/api_client.dart';
@@ -11,7 +11,6 @@ import '../services/ble_service.dart';
 import '../services/local_db.dart';
 import '../services/simulator_vitals_source.dart';
 import '../services/sync_service.dart';
-import '../services/vitals_source.dart';
 
 // --- Infrastructure ---------------------------------------------------------
 final secureStoreProvider = Provider((ref) => SecureStore());

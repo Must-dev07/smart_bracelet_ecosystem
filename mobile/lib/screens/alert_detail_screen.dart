@@ -1,8 +1,8 @@
-/// Alert detail: full message, triggering value, a lightweight audit trail
-/// (who acknowledged/resolved and when), acknowledge action (any role) and
-/// resolve action (doctor/admin only — see Alert.auto_resolves_on_acknowledge:
-/// vitals-based alerts stay open after a parent acknowledges them), plus the
-/// mandatory non-diagnostic disclaimer. Deep-link target for push taps.
+// Alert detail: full message, triggering value, a lightweight audit trail
+// (who acknowledged/resolved and when), acknowledge action (any role) and
+// resolve action (doctor/admin only — see Alert.auto_resolves_on_acknowledge:
+// vitals-based alerts stay open after a parent acknowledges them), plus the
+// mandatory non-diagnostic disclaimer. Deep-link target for push taps.
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

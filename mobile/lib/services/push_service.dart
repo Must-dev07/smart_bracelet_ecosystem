@@ -1,8 +1,8 @@
-/// FCM wiring for foreground, background and terminated states.
-/// Tapping a notification deep-links to AlertDetailScreen via the navigatorKey.
-///
-/// REQUIRES: google-services.json (Android) / GoogleService-Info.plist (iOS)
-/// from your Firebase project — see mobile/android_notes/README.md.
+// FCM wiring for foreground, background and terminated states.
+// Tapping a notification deep-links to AlertDetailScreen via the navigatorKey.
+//
+// REQUIRES: google-services.json (Android) / GoogleService-Info.plist (iOS)
+// from your Firebase project — see mobile/android_notes/README.md.
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';

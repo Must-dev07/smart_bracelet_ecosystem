@@ -1,6 +1,6 @@
-/// Alerts list: status/severity filters, search, and an at-a-glance status
-/// dot that distinguishes untouched-active from acknowledged-but-still-open
-/// (Section 8: filtering + a lightweight audit trail).
+// Alerts list: status/severity filters, search, and an at-a-glance status
+// dot that distinguishes untouched-active from acknowledged-but-still-open
+// (Section 8: filtering + a lightweight audit trail).
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

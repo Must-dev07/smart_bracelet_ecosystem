@@ -1,8 +1,8 @@
-/// Baby details: view the selected baby (any role), create a new one (parent
-/// role only — reached from the parent home screen's "Add baby" action), or
-/// edit/delete an existing one (parent/admin only — the backend rejects a
-/// doctor editing registration fields; doctors record clinical notes via
-/// medical history instead).
+// Baby details: view the selected baby (any role), create a new one (parent
+// role only — reached from the parent home screen's "Add baby" action), or
+// edit/delete an existing one (parent/admin only — the backend rejects a
+// doctor editing registration fields; doctors record clinical notes via
+// medical history instead).
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

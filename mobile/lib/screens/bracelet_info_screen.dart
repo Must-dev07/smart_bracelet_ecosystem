@@ -1,8 +1,8 @@
-/// Bracelet information: nickname, serial, firmware, battery, last sync,
-/// pairing state. Two distinct "rename" actions exist and are labelled
-/// accordingly: a persisted app-level rename (always available, any role
-/// with access) and a BLE device-command rename (only when physically
-/// connected — writes the name to the bracelet's own firmware).
+// Bracelet information: nickname, serial, firmware, battery, last sync,
+// pairing state. Two distinct "rename" actions exist and are labelled
+// accordingly: a persisted app-level rename (always available, any role
+// with access) and a BLE device-command rename (only when physically
+// connected — writes the name to the bracelet's own firmware).
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

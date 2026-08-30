@@ -1,7 +1,7 @@
-/// Notifications inbox (Section 9): category filter chips (alert/bracelet/
-/// medical/system, each with a distinct icon), unread count, mark
-/// read/mark-all-read, swipe-to-delete, tap = mark read + deep link to the
-/// alert when present.
+// Notifications inbox (Section 9): category filter chips (alert/bracelet/
+// medical/system, each with a distinct icon), unread count, mark
+// read/mark-all-read, swipe-to-delete, tap = mark read + deep link to the
+// alert when present.
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

@@ -1,8 +1,8 @@
-/// Parent (or admin, on a parent's behalf) requests a doctor for the
-/// currently selected baby. Submitting creates a pending
-/// DoctorAssignmentRequest — the baby is NOT reassigned until the doctor
-/// accepts. If a doctor is already assigned, this is "change doctor": the
-/// existing assignment stays in place until the new request is accepted.
+// Parent (or admin, on a parent's behalf) requests a doctor for the
+// currently selected baby. Submitting creates a pending
+// DoctorAssignmentRequest — the baby is NOT reassigned until the doctor
+// accepts. If a doctor is already assigned, this is "change doctor": the
+// existing assignment stays in place until the new request is accepted.
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

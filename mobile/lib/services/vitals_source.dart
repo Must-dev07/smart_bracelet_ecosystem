@@ -1,10 +1,10 @@
-/// Section 22: BLE Simulator and Real BLE Device both implement this one
-/// interface. Every screen (pairing, live monitoring, bracelet info) talks
-/// to a `VitalsSource`, never to `flutter_blue_plus` or the simulator
-/// directly — so which implementation is in use is purely a dependency-
-/// injection choice made in one place (`providers.dart`'s
-/// `bleServiceProvider`, driven by `useSimulatedBleProvider`), not something
-/// any screen needs to know about.
+// Section 22: BLE Simulator and Real BLE Device both implement this one
+// interface. Every screen (pairing, live monitoring, bracelet info) talks
+// to a `VitalsSource`, never to `flutter_blue_plus` or the simulator
+// directly — so which implementation is in use is purely a dependency-
+// injection choice made in one place (`providers.dart`'s
+// `bleServiceProvider`, driven by `useSimulatedBleProvider`), not something
+// any screen needs to know about.
 import 'dart:async';
 
 import '../models/models.dart';

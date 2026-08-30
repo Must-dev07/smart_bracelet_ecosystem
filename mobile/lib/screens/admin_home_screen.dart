@@ -1,8 +1,9 @@
-/// Admin dashboard: platform-wide counters (users, doctors, parents, babies,
-/// bracelets, active alerts) as tappable stat cards that open the matching
-/// directory screen. All the underlying endpoints are already scoped to
-/// "everything" for an admin (see babies/bracelets/alerts backend querysets),
-/// so this screen just needs to fetch and summarise them.
+// Admin dashboard: platform-wide counters (users, doctors, parents, babies,
+// bracelets, active alerts) as tappable stat cards that open the matching
+// directory screen. All the underlying endpoints are already scoped to
+// "everything" for an admin (see babies/bracelets/alerts backend querysets),
+// so this screen just needs to fetch and summarise them.
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

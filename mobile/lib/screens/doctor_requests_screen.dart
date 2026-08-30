@@ -1,7 +1,7 @@
-/// Doctor's inbox of pending patient (doctor-assignment) requests. Accepting
-/// assigns the baby to this doctor server-side; declining just closes the
-/// request. Both are one-shot actions — the backend rejects a second
-/// response to an already-resolved request.
+// Doctor's inbox of pending patient (doctor-assignment) requests. Accepting
+// assigns the baby to this doctor server-side; declining just closes the
+// request. Both are one-shot actions — the backend rejects a second
+// response to an already-resolved request.
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

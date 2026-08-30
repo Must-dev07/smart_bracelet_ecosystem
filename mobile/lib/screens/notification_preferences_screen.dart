@@ -1,8 +1,8 @@
-/// Notification preferences (Section 11): mute bracelet/medical/system
-/// notifications per-category. Vitals/device alerts are never mutable here
-/// — they're safety-relevant, so the toggle is shown disabled with an
-/// explanation rather than just omitted (omitting it would look like a bug,
-/// not a deliberate safety choice).
+// Notification preferences (Section 11): mute bracelet/medical/system
+// notifications per-category. Vitals/device alerts are never mutable here
+// — they're safety-relevant, so the toggle is shown disabled with an
+// explanation rather than just omitted (omitting it would look like a bug,
+// not a deliberate safety choice).
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

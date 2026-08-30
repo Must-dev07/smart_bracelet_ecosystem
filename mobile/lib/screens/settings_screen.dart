@@ -1,9 +1,9 @@
-/// Settings (Section 11): dark mode, language, units, sync status, BLE
-/// simulator toggle, notification preferences, privacy, profile link,
-/// delete account, logout. Dark mode/language/units/BLE preference persist
-/// via AppSettingsStore (SharedPreferences); notification preferences are
-/// server-side (they need to affect what the backend sends regardless of
-/// which device the user opens next).
+// Settings (Section 11): dark mode, language, units, sync status, BLE
+// simulator toggle, notification preferences, privacy, profile link,
+// delete account, logout. Dark mode/language/units/BLE preference persist
+// via AppSettingsStore (SharedPreferences); notification preferences are
+// server-side (they need to affect what the backend sends regardless of
+// which device the user opens next).
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
