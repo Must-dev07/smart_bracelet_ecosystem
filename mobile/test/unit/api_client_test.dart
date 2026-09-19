@@ -68,6 +68,34 @@ void main() {
           throwsA(isA<UnauthenticatedException>()));
     });
 
+    test('coalesces concurrent refreshes into one call (regression: racing '
+        'refreshes used to let the loser wipe out the winner\'s valid tokens, '
+        'silently logging the user out)', () async {
+      var refreshCalls = 0;
+      var dataCallCount = 0;
+      final client = MockClient((request) async {
+        if (request.url.path.endsWith('/auth/refresh')) {
+          refreshCalls++;
+          // Slow refresh so both requests are genuinely in flight together.
+          await Future.delayed(const Duration(milliseconds: 20));
+          return http.Response(
+              jsonEncode({'access': 'new-access', 'refresh': 'refresh-2'}), 200);
+        }
+        dataCallCount++;
+        // Both requests' first attempt 401s; their replays (post-refresh) succeed.
+        if (dataCallCount <= 2) return http.Response('{"detail":"expired"}', 401);
+        return http.Response(jsonEncode({'ok': true}), 200);
+      });
+      final api = ApiClient(httpClient: client, store: store);
+
+      final results =
+          await Future.wait([api.get('/babies/'), api.get('/alerts/')]);
+
+      expect(results[0]['ok'], true);
+      expect(results[1]['ok'], true);
+      expect(refreshCalls, 1); // deduplicated, not one per concurrent request
+    });
+
     test('sends PATCH with encoded body', () async {
       final client = MockClient((request) async {
         expect(request.method, 'PATCH');

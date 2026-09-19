@@ -59,7 +59,7 @@ final syncServiceProvider = Provider((ref) {
 final authRepositoryProvider = Provider((ref) => AuthRepository(
     ref.watch(apiClientProvider),
     ref.watch(secureStoreProvider),
-    ref.watch(bleServiceProvider)));
+    () => ref.read(bleServiceProvider)));
 final babyRepositoryProvider =
     Provider((ref) => BabyRepository(ref.watch(apiClientProvider)));
 final braceletRepositoryProvider =

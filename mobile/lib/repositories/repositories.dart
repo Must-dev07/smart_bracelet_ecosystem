@@ -10,7 +10,7 @@ import '../services/vitals_source.dart';
 class AuthRepository {
   final ApiClient _api;
   final SecureStore _store;
-  final VitalsSource _ble;
+  final VitalsSource Function() _ble;
 
   AuthRepository(this._api, this._store, this._ble);
 
@@ -39,7 +39,7 @@ class AuthRepository {
         await _api.post('/auth/logout', body: {'refresh': refresh});
       } catch (_) {/* server unreachable: still clear locally */}
     }
-    await _ble.clearBond();
+    await _ble().clearBond();
     await _store.clear();
   }
 

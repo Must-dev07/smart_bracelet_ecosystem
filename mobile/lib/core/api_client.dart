@@ -3,6 +3,14 @@
 /// persists rotated tokens, replays the original request. On refresh failure
 /// the session is cleared and an [UnauthenticatedException] is thrown so the
 /// UI can route to Login.
+///
+/// Refresh calls are coalesced (see [_tryRefresh]): the backend rotates the
+/// refresh token on every use (revokes the old session), so if two requests
+/// hit a 401 around the same moment and both raced to refresh independently,
+/// whichever reached the server second would get "Session revoked" and wipe
+/// out the tokens the first one just legitimately saved — silently logging
+/// the user out despite a valid session. Every 401 that arrives while a
+/// refresh is already in flight awaits that same attempt instead.
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
@@ -23,6 +31,7 @@ class ApiException implements Exception {
 class ApiClient {
   final http.Client _http;
   final SecureStore _store;
+  Future<bool>? _refreshInFlight;
 
   ApiClient({http.Client? httpClient, SecureStore? store})
       : _http = httpClient ?? http.Client(),
@@ -37,7 +46,13 @@ class ApiClient {
     return headers;
   }
 
-  Future<bool> _tryRefresh() async {
+  Future<bool> _tryRefresh() {
+    return _refreshInFlight ??= _performRefresh().whenComplete(() {
+      _refreshInFlight = null;
+    });
+  }
+
+  Future<bool> _performRefresh() async {
     final refresh = await _store.readRefreshToken();
     if (refresh == null) return false;
     final resp = await _http.post(

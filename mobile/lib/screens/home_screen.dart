@@ -23,6 +23,13 @@ class HomeScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(l.t('home')),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.bluetooth),
+            tooltip: 'Pair bracelet',
+            onPressed: () => Navigator.of(context).pushNamed('/pairing'),
+          ),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: () async {
