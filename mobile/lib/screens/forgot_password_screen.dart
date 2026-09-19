@@ -1,7 +1,7 @@
-/// Forgot password: collects the email and instructs the user to contact
-/// support/admin. (Assumption noted: the backend intentionally exposes no
-/// self-service reset endpoint in v1 — password resets are an admin action —
-/// so this screen sets honest expectations instead of faking an email flow.)
+//  / Forgot password: collects the email and instructs the user to contact
+// support/admin. (Assumption noted: the backend intentionally exposes no
+// self-service reset endpoint in v1 — password resets are an admin action —
+// so this screen sets honest expectations instead of faking an email flow.)
 import 'package:flutter/material.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {

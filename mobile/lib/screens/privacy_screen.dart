@@ -1,5 +1,5 @@
-/// Privacy (Section 11) — the same practices documented in the parent user
-/// manual, presented as an in-app screen instead of only a support doc.
+// Privacy (Section 11) — the same practices documented in the parent user
+// manual, presented as an in-app screen instead of only a support doc.
 import 'package:flutter/material.dart';
 
 class PrivacyScreen extends StatelessWidget {

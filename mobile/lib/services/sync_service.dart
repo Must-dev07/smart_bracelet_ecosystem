@@ -1,12 +1,12 @@
-/// Background sync worker: periodically drains the local SQLite queue to the
-/// backend bulk-ingest endpoint and marks rows synced. Reports BLE-lost events
-/// to the backend when the active VitalsSource (real BLE or simulator — see
-/// vitals_source.dart) signals a dropped link.
-///
-/// Auto-started once (see `syncServiceProvider`) as soon as any authenticated
-/// screen is reached — not just while Live Monitoring happens to be open —
-/// so readings collected while the app was in the background still drain
-/// promptly once connectivity returns.
+// Background sync worker: periodically drains the local SQLite queue to the
+// backend bulk-ingest endpoint and marks rows synced. Reports BLE-lost events
+// to the backend when the active VitalsSource (real BLE or simulator — see
+// vitals_source.dart) signals a dropped link.
+//
+// Auto-started once (see `syncServiceProvider`) as soon as any authenticated
+// screen is reached — not just while Live Monitoring happens to be open —
+// so readings collected while the app was in the background still drain
+// promptly once connectivity returns.
 import 'dart:async';
 import 'dart:convert';
 

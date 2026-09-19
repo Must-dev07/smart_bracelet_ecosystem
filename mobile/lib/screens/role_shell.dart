@@ -1,16 +1,16 @@
-/// Persistent bottom-navigation shell, one per role. Before this, every
-/// screen was reached via an AppBar icon button leading to a full-screen
-/// push — fine for one or two destinations, but with 4+ regularly-used
-/// sections per role that's a dated pattern. Each role gets its primary
-/// destinations as bottom tabs instead, plus a distinct nav accent color
-/// (AppColors.*Accent) so a screenshot alone tells you which role you're
-/// looking at. Admin's long tail of directory screens (Users/Doctors/
-/// Parents/Bracelets) stays reachable as quick-access cards on its Home tab
-/// rather than crowding the nav bar — the "hub" pattern.
-///
-/// Screens not listed here (Settings, admin directories, baby detail, alert
-/// detail, medical history, …) remain ordinary pushed routes on top of the
-/// shell — nothing about that navigation changes.
+// Persistent bottom-navigation shell, one per role. Before this, every
+// screen was reached via an AppBar icon button leading to a full-screen
+// push — fine for one or two destinations, but with 4+ regularly-used
+// sections per role that's a dated pattern. Each role gets its primary
+// destinations as bottom tabs instead, plus a distinct nav accent color
+// (AppColors.*Accent) so a screenshot alone tells you which role you're
+// looking at. Admin's long tail of directory screens (Users/Doctors/
+// Parents/Bracelets) stays reachable as quick-access cards on its Home tab
+// rather than crowding the nav bar — the "hub" pattern.
+//
+// Screens not listed here (Settings, admin directories, baby detail, alert
+// detail, medical history, …) remain ordinary pushed routes on top of the
+// shell — nothing about that navigation changes.
 import 'package:flutter/material.dart';
 
 import '../core/app_theme.dart';

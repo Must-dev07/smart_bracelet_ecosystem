@@ -1,11 +1,11 @@
-/// Persists the handful of local-only preferences (Section 11): theme,
-/// language, units, and which VitalsSource to use. Everything else
-/// (notification preferences) is server-side, since those need to affect
-/// what the backend sends regardless of which device the user opens next.
-///
-/// Wrapped in main.dart's ProviderScope override so `AppSettingsStore` is
-/// synchronously available by the time the widget tree builds — see
-/// settingsStoreProvider in providers.dart.
+// Persists the handful of local-only preferences (Section 11): theme,
+// language, units, and which VitalsSource to use. Everything else
+// (notification preferences) is server-side, since those need to affect
+// what the backend sends regardless of which device the user opens next.
+//
+// Wrapped in main.dart's ProviderScope override so `AppSettingsStore` is
+// synchronously available by the time the widget tree builds — see
+// settingsStoreProvider in providers.dart.
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AppSettingsStore {

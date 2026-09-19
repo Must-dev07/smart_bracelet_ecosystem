@@ -1,3 +1,4 @@
+
 /// HTTP client with JWT bearer injection and transparent silent refresh.
 /// On 401: tries POST /auth/refresh once with the stored refresh token,
 /// persists rotated tokens, replays the original request. On refresh failure
@@ -11,6 +12,7 @@
 /// out the tokens the first one just legitimately saved — silently logging
 /// the user out despite a valid session. Every 401 that arrives while a
 /// refresh is already in flight awaits that same attempt instead.
+
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;

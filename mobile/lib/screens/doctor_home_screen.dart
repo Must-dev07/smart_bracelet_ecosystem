@@ -1,9 +1,9 @@
-/// Doctor dashboard: patients assigned to this doctor (server-scoped — the
-/// backend's `/babies/` already filters to `assigned_doctor__user=me`, so
-/// this screen never needs to know that filtering itself), active alerts
-/// summary, and quick access to alerts/notifications/profile/settings.
-/// Doctors never see other doctors' patients, and never see the "Add baby"
-/// action that belongs to the parent home screen.
+// Doctor dashboard: patients assigned to this doctor (server-scoped — the
+// backend's `/babies/` already filters to `assigned_doctor__user=me`, so
+// this screen never needs to know that filtering itself), active alerts
+// summary, and quick access to alerts/notifications/profile/settings.
+// Doctors never see other doctors' patients, and never see the "Add baby"
+// action that belongs to the parent home screen.
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

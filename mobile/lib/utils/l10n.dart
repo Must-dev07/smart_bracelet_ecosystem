@@ -1,5 +1,5 @@
-/// Minimal i18n scaffolding (English + French) without codegen, so the map is
-/// easy to extend. Access via L10n.of(context).t('key').
+// Minimal i18n scaffolding (English + French) without codegen, so the map is
+// easy to extend. Access via L10n.of(context).t('key').
 import 'package:flutter/material.dart';
 
 class L10n {

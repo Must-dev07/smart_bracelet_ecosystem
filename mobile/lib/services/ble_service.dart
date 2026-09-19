@@ -1,18 +1,18 @@
-/// Real BLE implementation of VitalsSource (Section 22) — talks to actual
-/// ESP32 hardware over flutter_blue_plus. Scan → connect → discover Health
-/// Service → subscribe to all vitals characteristics → stream parsed
-/// readings. Handles auto-reconnect with exponential backoff and exposes a
-/// connection-status stream for the UI. See vitals_source.dart for the
-/// shared interface SimulatorVitalsSource also implements — no screen
-/// imports this file directly except providers.dart's DI wiring.
-///
-/// Wire formats (must match firmware/ble/health_service.cpp):
-///   heart_rate : float32 LE (bpm)
-///   temperature: float32 LE (°C)
-///   spo2       : float32 LE (%)
-///   movement   : 7 x float32 LE (ax,ay,az,gx,gy,gz,magnitude)
-///   battery    : float32 LE (%)
-///   device_info: UTF-8 string "fw=<version>;serial=<sn>"
+// Real BLE implementation of VitalsSource (Section 22) — talks to actual
+// ESP32 hardware over flutter_blue_plus. Scan → connect → discover Health
+// Service → subscribe to all vitals characteristics → stream parsed
+// readings. Handles auto-reconnect with exponential backoff and exposes a
+// connection-status stream for the UI. See vitals_source.dart for the
+// shared interface SimulatorVitalsSource also implements — no screen
+// imports this file directly except providers.dart's DI wiring.
+//
+// Wire formats (must match firmware/ble/health_service.cpp):
+//   heart_rate : float32 LE (bpm)
+//   temperature: float32 LE (°C)
+//   spo2       : float32 LE (%)
+//   movement   : 7 x float32 LE (ax,ay,az,gx,gy,gz,magnitude)
+//   battery    : float32 LE (%)
+//   device_info: UTF-8 string "fw=<version>;serial=<sn>"
 import 'dart:async';
 import 'dart:math';
 import 'dart:typed_data';

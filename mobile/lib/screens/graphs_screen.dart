@@ -1,6 +1,6 @@
-/// Graphs (Section 16): fl_chart time-series for HR / temperature / SpO2 /
-/// battery / movement, daily/weekly/monthly presets plus a custom date
-/// range, pinch-to-zoom/pan (InteractiveViewer), and tap tooltips.
+// Graphs (Section 16): fl_chart time-series for HR / temperature / SpO2 /
+// battery / movement, daily/weekly/monthly presets plus a custom date
+// range, pinch-to-zoom/pan (InteractiveViewer), and tap tooltips.
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

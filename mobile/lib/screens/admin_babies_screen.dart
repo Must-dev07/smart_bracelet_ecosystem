@@ -1,7 +1,7 @@
-/// Admin: every baby on the platform (GET /babies/, admin-scoped to all).
-/// Read-only overview with search; tapping a row opens the same baby detail
-/// view parents and doctors use (view mode only — admin doesn't get the
-/// "Add baby" create form, that stays a parent-only action).
+// Admin: every baby on the platform (GET /babies/, admin-scoped to all).
+// Read-only overview with search; tapping a row opens the same baby detail
+// view parents and doctors use (view mode only — admin doesn't get the
+// "Add baby" create form, that stays a parent-only action).
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

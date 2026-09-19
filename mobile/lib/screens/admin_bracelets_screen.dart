@@ -1,7 +1,7 @@
-/// Admin: every bracelet on the platform (GET /bracelets/, admin-scoped to
-/// all), searchable by serial/nickname/baby, filterable by paired/unpaired
-/// (Section 15). Tapping a row opens the same bracelet detail/pairing-
-/// history screen parents and doctors use.
+// Admin: every bracelet on the platform (GET /bracelets/, admin-scoped to
+// all), searchable by serial/nickname/baby, filterable by paired/unpaired
+// (Section 15). Tapping a row opens the same bracelet detail/pairing-
+// history screen parents and doctors use.
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

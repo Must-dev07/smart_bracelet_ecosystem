@@ -1,6 +1,6 @@
-/// Bluetooth pairing flow (spec 5.3): scan → pick device → connect+bond →
-/// register bracelet on the backend (serial from device_info) → pair to the
-/// selected baby → live values within seconds.
+// Bluetooth pairing flow (spec 5.3): scan → pick device → connect+bond →
+// register bracelet on the backend (serial from device_info) → pair to the
+// selected baby → live values within seconds.
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

@@ -1,6 +1,6 @@
-/// Admin: doctor directory (GET /doctors/) with specialty/license, searchable,
-/// showing how many patients each doctor currently has (cross-referenced
-/// against the babies list — admin-scoped to every baby on the platform).
+// Admin: doctor directory (GET /doctors/) with specialty/license, searchable,
+// showing how many patients each doctor currently has (cross-referenced
+// against the babies list — admin-scoped to every baby on the platform).
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

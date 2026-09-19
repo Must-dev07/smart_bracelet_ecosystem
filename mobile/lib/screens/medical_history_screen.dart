@@ -1,7 +1,7 @@
-/// Medical history for the currently selected baby (Section 4). Entries are
-/// append-only: doctors/admins can add new entries, nobody can edit or
-/// delete a previous one — corrections are made by adding a fresh entry.
-/// Parents (and doctors) always see the full read-only timeline.
+// Medical history for the currently selected baby (Section 4). Entries are
+// append-only: doctors/admins can add new entries, nobody can edit or
+// delete a previous one — corrections are made by adding a fresh entry.
+// Parents (and doctors) always see the full read-only timeline.
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
