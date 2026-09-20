@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "222581148548",
+    "project_id": "centure-smart",
+    "storage_bucket": "centure-smart.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:222581148548:android:7a434afff8ddc795d5ebd1",
+        "android_client_info": {
+          "package_name": "com.centuresmart.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvD5R0oR4QRWsI8LcGbVN7j_vxNTA0wZE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
